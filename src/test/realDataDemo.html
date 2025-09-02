@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真实数据测试演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: #1890ff;
+            margin-bottom: 30px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            opacity: 0.9;
+        }
+        .data-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 5px;
+        }
+        .streamer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .streamer-card {
+            background: #fafafa;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        .streamer-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .streamer-name {
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 8px;
+        }
+        .streamer-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .change-positive {
+            color: #52c41a;
+        }
+        .change-negative {
+            color: #ff4d4f;
+        }
+        .import-section {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .import-title {
+            color: #1890ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .file-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 5px 0;
+        }
+        .button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 星汇漫舞真实数据测试演示</h1>
+            <p>基于6月和7月真实主播币量数据的分析报告</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalStreamers">39</div>
+                <div class="stat-label">7月主播总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="juneTotal">7,567,811</div>
+                <div class="stat-label">6月总币量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="julyTotal">10,811,347</div>
+                <div class="stat-label">7月总币量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value change-positive" id="monthChange">+42.87%</div>
+                <div class="stat-label">环比增长</div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div class="section-title">🏆 头部主播对比 (前10名)</div>
+            <div class="streamer-list" id="topStreamers">
+                <!-- 动态生成内容 -->
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div class="section-title">📈 排名变化最大的主播</div>
+            <div class="streamer-list" id="rankingChanges">
+                <!-- 动态生成内容 -->
+            </div>
+        </div>
+
+        <div class="import-section">
+            <div class="import-title">📁 数据文件信息</div>
+            <p>以下JSON文件已生成，可直接导入到应用程序中进行测试：</p>
+            <div class="file-info">📄 real_data_june_2024.json - 6月主播数据 (47位主播)</div>
+            <div class="file-info">📄 real_data_july_2024.json - 7月主播数据 (39位主播)</div>
+            
+            <p><strong>导入步骤：</strong></p>
+            <ol>
+                <li>打开主应用程序 (http://localhost:3000)</li>
+                <li>点击"数据导入"按钮</li>
+                <li>选择上述JSON文件进行导入</li>
+                <li>查看排行榜、统计卡片和月度环比分析</li>
+            </ol>
+            
+            <button class="button" onclick="openApp()">🚀 打开应用程序</button>
+            <button class="button" onclick="copyData()">📋 复制数据路径</button>
+        </div>
+    </div>
+
+    <script>
+        // 真实数据 - 基于6月和7月MD文件
+        const topStreamersData = [
+            { name: 'StreamerQ', juneCoins: 0, julyCoins: 2120425, juneRank: null, julyRank: 1 },
+            { name: 'StreamerC', juneCoins: 764030, julyCoins: 1590526, juneRank: 3, julyRank: 2 },
+            { name: 'StreamerA', juneCoins: 836669, julyCoins: 681638, juneRank: 1, julyRank: 3 },
+            { name: 'StreamerR', juneCoins: 0, julyCoins: 661086, juneRank: null, julyRank: 4 },
+            { name: 'StreamerB', juneCoins: 797145, julyCoins: 624312, juneRank: 2, julyRank: 5 }
+        ];
+
+        const rankingChangesData = [
+            { name: '诗瑶', juneRank: 39, julyRank: 32, change: 7, coinsChange: 29.06 },
+            { name: 'StreamerX', juneRank: 38, julyRank: 33, change: 5, coinsChange: 23.75 },
+            { name: 'StreamerT', juneRank: 31, julyRank: 40, change: -9, coinsChange: -17.93 },
+            { name: 'StreamerN', juneRank: 14, julyRank: 20, change: -6, coinsChange: -19.21 }
+        ];
+
+        function renderTopStreamers() {
+            const container = document.getElementById('topStreamers');
+            container.innerHTML = topStreamersData.map(streamer => {
+                const coinsChange = ((streamer.julyCoins - streamer.juneCoins) / streamer.juneCoins * 100).toFixed(2);
+                const changeClass = coinsChange >= 0 ? 'change-positive' : 'change-negative';
+                const rankChange = streamer.juneRank - streamer.julyRank;
+                const rankText = rankChange > 0 ? `↑${rankChange}` : rankChange < 0 ? `↓${Math.abs(rankChange)}` : '→';
+                
+                return `
+                    <div class="streamer-card">
+                        <div class="streamer-name">${streamer.name}</div>
+                        <div class="streamer-stats">
+                            <span>6月: ${streamer.juneCoins.toLocaleString()}</span>
+                            <span>7月: ${streamer.julyCoins.toLocaleString()}</span>
+                        </div>
+                        <div class="streamer-stats">
+                            <span>排名: ${streamer.juneRank} → ${streamer.julyRank} ${rankText}</span>
+                            <span class="${changeClass}">${coinsChange >= 0 ? '+' : ''}${coinsChange}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRankingChanges() {
+            const container = document.getElementById('rankingChanges');
+            container.innerHTML = rankingChangesData.map(streamer => {
+                const changeClass = streamer.change > 0 ? 'change-positive' : 'change-negative';
+                const coinsChangeClass = streamer.coinsChange >= 0 ? 'change-positive' : 'change-negative';
+                const changeText = streamer.change > 0 ? `上升${streamer.change}位` : `下降${Math.abs(streamer.change)}位`;
+                
+                return `
+                    <div class="streamer-card">
+                        <div class="streamer-name">${streamer.name}</div>
+                        <div class="streamer-stats">
+                            <span>排名: ${streamer.juneRank} → ${streamer.julyRank}</span>
+                            <span class="${changeClass}">${changeText}</span>
+                        </div>
+                        <div class="streamer-stats">
+                            <span>币量变化:</span>
+                            <span class="${coinsChangeClass}">${streamer.coinsChange >= 0 ? '+' : ''}${streamer.coinsChange}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openApp() {
+            window.open('http://localhost:3000', '_blank');
+        }
+
+        function copyData() {
+            const path = '/Users/hur/星汇漫舞/数据/code/streamer-dashboard/src/test/';
+            navigator.clipboard.writeText(path).then(() => {
+                alert('数据文件路径已复制到剪贴板！\n' + path);
+            });
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTopStreamers();
+            renderRankingChanges();
+        });
+    </script>
+</body>
+</html>

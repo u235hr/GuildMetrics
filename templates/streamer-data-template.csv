@@ -1,0 +1,17 @@
+主播姓名,礼物值,等级,头像URL,备注
+小雨,15000,S,https://example.com/avatar1.jpg,当月表现优秀
+晓晓,12500,A,https://example.com/avatar2.jpg,稳定增长
+梦梦,11800,A,https://example.com/avatar3.jpg,新人主播
+小花,10200,B,https://example.com/avatar4.jpg,
+阳阳,9800,B,https://example.com/avatar5.jpg,
+星星,8500,C,https://example.com/avatar6.jpg,
+月月,7200,C,https://example.com/avatar7.jpg,
+
+# 使用说明：
+# 1. 主播姓名：必填，主播的显示名称
+# 2. 礼物值：必填，数字格式，表示该主播当月收到的礼物总价值
+# 3. 等级：必填，可选值：S、A、B、C、D
+# 4. 头像URL：可选，主播头像图片链接，留空将使用默认头像
+# 5. 备注：可选，对该主播的备注信息
+# 6. 保存为CSV格式时请确保使用UTF-8编码
+# 7. 导入前请删除此说明部分

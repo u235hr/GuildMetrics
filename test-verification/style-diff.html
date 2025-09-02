@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>样式对比工具</title>
+  <style>
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #2c3e50;
+      margin-top: 0;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      margin-right: 5px;
+    }
+    .tab.active {
+      background-color: white;
+      border-bottom: 1px solid white;
+      margin-bottom: -1px;
+      font-weight: bold;
+      color: #3498db;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .comparison {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .comparison-item {
+      flex: 1;
+      min-width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .comparison-header {
+      background-color: #f8f9fa;
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    .comparison-content {
+      padding: 15px;
+    }
+    .code-block {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .highlight {
+      background-color: #fffacd;
+    }
+    .removed {
+      background-color: #ffecec;
+      text-decoration: line-through;
+      color: #e74c3c;
+    }
+    .added {
+      background-color: #eaffea;
+      color: #27ae60;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f8f9fa;
+    }
+    .button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .button:hover {
+      background-color: #2980b9;
+    }
+    .button-secondary {
+      background-color: #95a5a6;
+    }
+    .button-secondary:hover {
+      background-color: #7f8c8d;
+    }
+    .summary {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3498db;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TOP3区域样式对比工具</h1>
+    
+    <div class="summary">
+      <h2>修改总结</h2>
+      <p>我们对TOP3区域进行了以下修改，以减小其高度并为表格提供更多空间：</p>
+      <ol>
+        <li>将所有固定高度设置移除，改用<code>h-auto</code>确保高度自适应内容</li>
+        <li>添加<code>style={{ maxHeight: '50%' }}</code>样式属性限制section最大高度为页面50%</li>
+        <li>减小内部元素尺寸：
+          <ul>
+            <li>将<code>.top-three-card</code>的<code>p-2</code>改为<code>p-1</code>，<code>mb-1</code>改为<code>mb-0.5</code></li>
+            <li>将<code>Icon</code>的<code>w-4 h-4</code>改为<code>w-3 h-3</code></li>
+            <li>将<code>strong</code>的字体大小从默认改为<code>text-xs</code></li>
+            <li>将<code>TrendingUp</code>的<code>w-3 h-3</code>改为<code>w-2 h-2</code></li>
+            <li>将<code>figure</code>的<code>gap-1</code>改为<code>gap-0.5</code></li>
+            <li>将<code>strong</code>的<code>w-6 h-6</code>改为<code>w-4 h-4</code>，字体大小从<code>text-base</code>改为<code>text-xs</code></li>
+            <li>将<code>h3</code>的字体大小从<code>text-sm</code>改为<code>text-xs</code></li>
+            <li>将<code>section</code>的<code>mt-1</code>改为<code>mt-0.5</code></li>
+            <li>将<code>dd</code>的字体大小从<code>text-lg</code>改为<code>text-sm</code></li>
+          </ul>
+        </li>
+        <li>减小<code>.top-three-grid</code>的<code>gap</code>和<code>padding</code>从<code>clamp(6px, 1.5vw, 12px)</code>到<code>clamp(3px, 0.75vw, 6px)</code></li>
+        <li>减小<code>.modern-top-three .top-three-card .card-content</code>的<code>padding</code>从<code>clamp(0.25rem, 0.8vw, 0.45rem) clamp(0.35rem, 1vw, 0.6rem)</code>到<code>clamp(0.125rem, 0.4vw, 0.225rem) clamp(0.175rem, 0.5vw, 0.3rem)</code></li>
+      </ol>
+    </div>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="component">组件修改</div>
+      <div class="tab" data-tab="css">CSS修改</div>
+      <div class="tab" data-tab="verify">验证方法</div>
+    </div>
+    
+    <div class="tab-content active" id="component">
+      <h2>ModernTopThreeDisplay.tsx 修改对比</h2>
+      
+      <div class="comparison">
+        <div class="comparison-item">
+          <div class="comparison-header">修改前</div>
+          <div class="comparison-content">
+            <div class="code-block">
+<span class="highlight">export default function ModernTopThreeDisplay({ data }: Props) {
+  return (
+    &lt;section className="modern-top-three"&gt;
+      &lt;div className="top-three-grid"&gt;
+        {data.map((item, index) => (
+          &lt;article key={item.id} className="top-three-card p-2 mb-1"&gt;
+            &lt;div className="card-inner"&gt;
+              &lt;header className="flex justify-between items-center mb-1"&gt;
+                &lt;div className="flex items-center gap-1"&gt;
+                  &lt;Icon className="w-4 h-4" /&gt;
+                  &lt;strong&gt;{getRankLabel(index)}&lt;/strong&gt;
+                &lt;/div&gt;
+                &lt;div className="flex items-center gap-1"&gt;
+                  &lt;TrendingUp className="w-3 h-3" /&gt;
+                  &lt;span&gt;{item.growth}%&lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/header&gt;
+              &lt;div className="card-content"&gt;
+                &lt;figure className="flex items-center gap-1"&gt;
+                  &lt;strong className="w-6 h-6 text-base"&gt;{item.avatar}&lt;/strong&gt;
+                  &lt;figcaption&gt;
+                    &lt;h3 className="text-sm"&gt;{item.name}&lt;/h3&gt;
+                    &lt;span className="text-xs opacity-70"&gt;ID: {item.id}&lt;/span&gt;
+                  &lt;/figcaption&gt;
+                &lt;/figure&gt;
+                &lt;section className="mt-1"&gt;
+                  &lt;dl&gt;
+                    &lt;dt&gt;礼物值&lt;/dt&gt;
+                    &lt;dd className="text-lg"&gt;{formatNumber(item.giftValue)}&lt;/dd&gt;
+                  &lt;/dl&gt;
+                &lt;/section&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/article&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/section&gt;
+  );
+}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="comparison-item">
+          <div class="comparison-header">修改后</div>
+          <div class="comparison-content">
+            <div class="code-block">
+<span>export default function ModernTopThreeDisplay({ data }: Props) {
+  return (
+    &lt;section className="modern-top-three" <span class="added">style={{ maxHeight: '50%' }}</span>&gt;
+      &lt;div className="top-three-grid"&gt;
+        {data.map((item, index) => (
+          &lt;article key={item.id} className="top-three-card <span class="removed">p-2 mb-1</span><span class="added">p-1 mb-0.5 h-auto</span>"&gt;
+            &lt;div className="card-inner"&gt;
+              &lt;header className="flex justify-between items-center <span class="removed">mb-1</span><span class="added">mb-0.5</span>"&gt;
+                &lt;div className="flex items-center gap-1"&gt;
+                  &lt;Icon className="<span class="removed">w-4 h-4</span><span class="added">w-3 h-3</span>" /&gt;
+                  &lt;strong <span class="added">className="text-xs"</span>&gt;{getRankLabel(index)}&lt;/strong&gt;
+                &lt;/div&gt;
+                &lt;div className="flex items-center gap-1"&gt;
+                  &lt;TrendingUp className="<span class="removed">w-3 h-3</span><span class="added">w-2 h-2</span>" /&gt;
+                  &lt;span&gt;{item.growth}%&lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/header&gt;
+              &lt;div className="card-content"&gt;
+                &lt;figure className="flex items-center <span class="removed">gap-1</span><span class="added">gap-0.5</span>"&gt;
+                  &lt;strong className="<span class="removed">w-6 h-6 text-base</span><span class="added">w-4 h-4 text-xs</span>"&gt;{item.avatar}&lt;/strong&gt;
+                  &lt;figcaption&gt;
+                    &lt;h3 className="<span class="removed">text-sm</span><span class="added">text-xs</span>"&gt;{item.name}&lt;/h3&gt;
+                    &lt;span className="text-xs opacity-70"&gt;ID: {item.id}&lt;/span&gt;
+                  &lt;/figcaption&gt;
+                &lt;/figure&gt;
+                &lt;section className="<span class="removed">mt-1</span><span class="added">mt-0.5</span>"&gt;
+                  &lt;dl&gt;
+                    &lt;dt&gt;礼物值&lt;/dt&gt;
+                    &lt;dd className="<span class="removed">text-lg</span><span class="added">text-sm</span>"&gt;{formatNumber(item.giftValue)}&lt;/dd&gt;
+                  &lt;/dl&gt;
+                &lt;/section&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/article&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/section&gt;
+  );
+}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="css">
+      <h2>CSS 修改对比</h2>
+      
+      <div class="comparison">
+        <div class="comparison-item">
+          <div class="comparison-header">修改前 (adaptive-layout.css)</div>
+          <div class="comparison-content">
+            <div class="code-block">
+<span class="highlight">.top-three-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 1.5vw, 12px);
+  padding: clamp(6px, 1.5vw, 12px);
+}
+
+/* ... */
+
+.modern-top-three .top-three-card .card-content {
+  padding: clamp(0.25rem, 0.8vw, 0.45rem) clamp(0.35rem, 1vw, 0.6rem);
+}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="comparison-item">
+          <div class="comparison-header">修改后 (adaptive-layout.css)</div>
+          <div class="comparison-content">
+            <div class="code-block">
+<span>.top-three-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: <span class="removed">clamp(6px, 1.5vw, 12px)</span><span class="added">clamp(3px, 0.75vw, 6px)</span>;
+  padding: <span class="removed">clamp(6px, 1.5vw, 12px)</span><span class="added">clamp(3px, 0.75vw, 6px)</span>;
+}
+
+/* ... */
+
+.modern-top-three .top-three-card .card-content {
+  padding: <span class="removed">clamp(0.25rem, 0.8vw, 0.45rem) clamp(0.35rem, 1vw, 0.6rem)</span><span class="added">clamp(0.125rem, 0.4vw, 0.225rem) clamp(0.175rem, 0.5vw, 0.3rem)</span>;
+}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <h2>样式修改汇总表</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>元素</th>
+            <th>属性</th>
+            <th>修改前</th>
+            <th>修改后</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>section.modern-top-three</td>
+            <td>maxHeight</td>
+            <td>未设置</td>
+            <td>50%</td>
+          </tr>
+          <tr>
+            <td>article.top-three-card</td>
+            <td>padding</td>
+            <td>p-2</td>
+            <td>p-1</td>
+          </tr>
+          <tr>
+            <td>article.top-three-card</td>
+            <td>margin-bottom</td>
+            <td>mb-1</td>
+            <td>mb-0.5</td>
+          </tr>
+          <tr>
+            <td>article.top-three-card</td>
+            <td>height</td>
+            <td>未设置</td>
+            <td>h-auto</td>
+          </tr>
+          <tr>
+            <td>header</td>
+            <td>margin-bottom</td>
+            <td>mb-1</td>
+            <td>mb-0.5</td>
+          </tr>
+          <tr>
+            <td>Icon</td>
+            <td>width/height</td>
+            <td>w-4 h-4</td>
+            <td>w-3 h-3</td>
+          </tr>
+          <tr>
+            <td>strong (排名)</td>
+            <td>font-size</td>
+            <td>默认</td>
+            <td>text-xs</td>
+          </tr>
+          <tr>
+            <td>TrendingUp</td>
+            <td>width/height</td>
+            <td>w-3 h-3</td>
+            <td>w-2 h-2</td>
+          </tr>
+          <tr>
+            <td>figure</td>
+            <td>gap</td>
+            <td>gap-1</td>
+            <td>gap-0.5</td>
+          </tr>
+          <tr>
+            <td>strong (头像)</td>
+            <td>width/height</td>
+            <td>w-6 h-6</td>
+            <td>w-4 h-4</td>
+          </tr>
+          <tr>
+            <td>strong (头像)</td>
+            <td>font-size</td>
+            <td>text-base</td>
+            <td>text-xs</td>
+          </tr>
+          <tr>
+            <td>h3 (主播名)</td>
+            <td>font-size</td>
+            <td>text-sm</td>
+            <td>text-xs</td>
+          </tr>
+          <tr>
+            <td>section (礼物值)</td>
+            <td>margin-top</td>
+            <td>mt-1</td>
+            <td>mt-0.5</td>
+          </tr>
+          <tr>
+            <td>dd (礼物值)</td>
+            <td>font-size</td>
+            <td>text-lg</td>
+            <td>text-sm</td>
+          </tr>
+          <tr>
+            <td>.top-three-grid</td>
+            <td>gap</td>
+            <td>clamp(6px, 1.5vw, 12px)</td>
+            <td>clamp(3px, 0.75vw, 6px)</td>
+          </tr>
+          <tr>
+            <td>.top-three-grid</td>
+            <td>padding</td>
+            <td>clamp(6px, 1.5vw, 12px)</td>
+            <td>clamp(3px, 0.75vw, 6px)</td>
+          </tr>
+          <tr>
+            <td>.card-content</td>
+            <td>padding</td>
+            <td>clamp(0.25rem, 0.8vw, 0.45rem) clamp(0.35rem, 1vw, 0.6rem)</td>
+            <td>clamp(0.125rem, 0.4vw, 0.225rem) clamp(0.175rem, 0.5vw, 0.3rem)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="tab-content" id="verify">
+      <h2>验证方法</h2>
+      
+      <p>我们提供了多种方法来验证样式修改是否正确应用：</p>
+      
+      <h3>方法一：使用注入脚本（推荐）</h3>
+      <p>这是最简单的验证方法，只需在浏览器控制台中执行一段代码：</p>
+      
+      <ol>
+        <li>打开 <a href="http://localhost:3000/modern-ranking" target="_blank">现代排行榜页面</a></li>
+        <li>打开浏览器开发者工具（F12或右键检查）</li>
+        <li>切换到控制台（Console）标签</li>
+        <li>复制并执行以下代码：</li>
+      </ol>
+      
+      <div class="code-block">
+// 加载验证脚本
+const script = document.createElement('script');
+script.src = '/test-verification/inject.js';
+document.head.appendChild(script);
+
+// 脚本会自动执行验证
+      </div>
+      
+      <a href="quick-verify.html" target="_blank" class="button">打开快速验证工具</a>
+      
+      <h3>方法二：使用开发者工具检查</h3>
+      <p>您也可以使用浏览器开发者工具手动检查样式是否应用：</p>
+      
+      <ol>
+        <li>打开 <a href="http://localhost:3000/modern-ranking" target="_blank">现代排行榜页面</a></li>
+        <li>打开浏览器开发者工具（F12或右键检查）</li>
+        <li>选择元素（Elements）标签</li>
+        <li>检查以下元素的样式：
+          <ul>
+            <li>section.modern-top-three - 检查maxHeight是否为50%</li>
+            <li>article.top-three-card - 检查padding和margin是否减小</li>
+            <li>各个内部元素 - 检查字体大小和图标尺寸是否减小</li>
+          </ul>
+        </li>
+      </ol>
+      
+      <h3>方法三：截图对比</h3>
+      <p>通过对比修改前后的截图，可以直观地看到高度变化：</p>
+      
+      <ol>
+        <li>在修改前截取页面截图</li>
+        <li>应用所有修改后再次截图</li>
+        <li>使用图片编辑工具测量两张图片中TOP3区域的高度</li>
+        <li>计算高度减少的百分比</li>
+      </ol>
+      
+      <a href="css-validator.html" target="_blank" class="button">打开图片对比工具</a>
+    </div>
+  </div>
+
+  <script>
+    // 标签切换功能
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        // 移除所有标签的active类
+        document.querySelectorAll('.tab').forEach(t => {
+          t.classList.remove('active');
+        });
+        
+        // 移除所有内容的active类
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        
+        // 添加当前标签的active类
+        this.classList.add('active');
+        
+        // 显示对应的内容
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
