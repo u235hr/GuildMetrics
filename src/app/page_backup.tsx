@@ -22,8 +22,8 @@ export default function Home() {
   }));
 
   return (
-    <main className="h-screen w-screen text-[min(1.5cqw,1.5cqh)] bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
-      <div className="h-full w-full flex flex-col container-type-size">
+    <main className="h-screen w-screen container-type-size text-[min(1.5cqw,1.5cqh)] bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
+      <div className="h-full flex flex-col">
         {/* Header - 10% ¸ß¶È */}
         <div className="h-[10cqh]">
           <Header />

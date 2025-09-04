@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 
-import { usePageStore } from '@/store';
+import { usePageStore } from '@/store'; // Import the Zustand store
 
 export default function Header() {
+  // Use the store's state and actions
   const { activePage, setActivePage, selectedMonth, setSelectedMonth } = usePageStore();
 
   const pages = [
@@ -11,12 +12,12 @@ export default function Header() {
     { name: '数据维护', key: 'maintenance' },
   ];
 
-  const navButtonBase = "h-[2.5em] w-[7em] px-[1.2em] py-[0.6em] flex items-center justify-center rounded-[0.4em] text-white text-[1em] font-semibold border-2 transition-all duration-300";
-  const navButtonInactive = "bg-white/10 hover:bg-white/20 border-white/20";
+  const navButtonBase = "h-[2.5em] px-[1.2em] py-[0.6em] flex items-center justify-center rounded-[0.4em] text-white text-[1em] font-semibold border border-white/20 transition-all duration-300";
+  const navButtonInactive = "bg-white/10 hover:bg-white/20";
   const navButtonActive = "bg-blue-500/50 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.7)]";
 
   return (
-    <header data-testid="header" className="h-full w-full flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-[0.6em] p-[1em] shadow-lg">
+    <header data-testid="header" className="h-full flex items-center container-type-size text-[min(1.8cqw,1.8cqh)] bg-black/20 backdrop-blur-sm border border-white/10 rounded-[0.6em] p-[1em] shadow-lg">
       {/* Left: Logo and Title */}
       <div className="w-1/4 flex items-center gap-[0.8em]">
         <img src="/globe.svg" alt="Logo" className="w-[2.5em] h-[2.5em] opacity-80" />

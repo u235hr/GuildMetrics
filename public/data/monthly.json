@@ -1,0 +1,620 @@
+{
+  "2024-06": {
+    "month": 6,
+    "year": 2024,
+    "streamerCount": 47,
+    "totalGiftValue": 7567811,
+    "streamers": [
+      {
+        "rank": 1,
+        "name": "宝儿",
+        "giftValue": 836669,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 2,
+        "name": "雪儿",
+        "giftValue": 797145,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 3,
+        "name": "安妮",
+        "giftValue": 764030,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 4,
+        "name": "鱼儿",
+        "giftValue": 297901,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 5,
+        "name": "丽娜",
+        "giftValue": 288709,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 6,
+        "name": "六六",
+        "giftValue": 276929,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 7,
+        "name": "菟菟",
+        "giftValue": 270791,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 8,
+        "name": "小妮子",
+        "giftValue": 227546,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 9,
+        "name": "紫琳",
+        "giftValue": 227003,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 10,
+        "name": "英英",
+        "giftValue": 224118,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 11,
+        "name": "闻雨",
+        "giftValue": 222840,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 12,
+        "name": "小蛮",
+        "giftValue": 208173,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 13,
+        "name": "梦妮",
+        "giftValue": 204274,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 14,
+        "name": "可儿",
+        "giftValue": 171932,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 15,
+        "name": "心缘",
+        "giftValue": 171465,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 16,
+        "name": "若兮",
+        "giftValue": 165299,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 17,
+        "name": "开心就好",
+        "giftValue": 144556,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 18,
+        "name": "菲儿",
+        "giftValue": 141567,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 19,
+        "name": "瑶玥",
+        "giftValue": 138418,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 20,
+        "name": "糖小糖",
+        "giftValue": 125558,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 21,
+        "name": "允诺",
+        "giftValue": 112434,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 22,
+        "name": "香香",
+        "giftValue": 111208,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 23,
+        "name": "妙涵",
+        "giftValue": 105904,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 24,
+        "name": "娜娜",
+        "giftValue": 104135,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 25,
+        "name": "巧儿",
+        "giftValue": 88426,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 26,
+        "name": "少女",
+        "giftValue": 90305,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 27,
+        "name": "静静",
+        "giftValue": 70970,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 28,
+        "name": "汐汐",
+        "giftValue": 65224,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 29,
+        "name": "清香",
+        "giftValue": 64081,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 30,
+        "name": "卿卿",
+        "giftValue": 62914,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 31,
+        "name": "幸福",
+        "giftValue": 62006,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 32,
+        "name": "蓓儿",
+        "giftValue": 57285,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 33,
+        "name": "心彤",
+        "giftValue": 57260,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 34,
+        "name": "阿敏",
+        "giftValue": 56763,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "陌离",
+        "giftValue": 53085,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 36,
+        "name": "可星",
+        "giftValue": 47934,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 37,
+        "name": "恋儿",
+        "giftValue": 47912,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 38,
+        "name": "依依",
+        "giftValue": 46462,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 39,
+        "name": "诗瑶",
+        "giftValue": 45423,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 40,
+        "name": "夏雨",
+        "giftValue": 44219,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 41,
+        "name": "天天",
+        "giftValue": 40829,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 42,
+        "name": "欣欣",
+        "giftValue": 39545,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 43,
+        "name": "丽丽",
+        "giftValue": 37097,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 44,
+        "name": "辣包子",
+        "giftValue": 38463,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 45,
+        "name": "拾柒",
+        "giftValue": 38137,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 46,
+        "name": "宛儿",
+        "giftValue": 38728,
+        "month": 6,
+        "year": 2024
+      },
+      {
+        "rank": 47,
+        "name": "豆奶",
+        "giftValue": 36139,
+        "month": 6,
+        "year": 2024
+      }
+    ]
+  },
+  "2024-07": {
+    "month": 7,
+    "year": 2024,
+    "streamerCount": 39,
+    "totalGiftValue": 10811347,
+    "streamers": [
+      {
+        "rank": 1,
+        "name": "小太阳",
+        "giftValue": 2120425,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 2,
+        "name": "安妮",
+        "giftValue": 1590526,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 3,
+        "name": "宝儿",
+        "giftValue": 681638,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 4,
+        "name": "小燕子",
+        "giftValue": 661086,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 5,
+        "name": "雪儿",
+        "giftValue": 624312,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 6,
+        "name": "小妮子",
+        "giftValue": 446769,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 7,
+        "name": "妙涵",
+        "giftValue": 444035,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 8,
+        "name": "紫琳",
+        "giftValue": 322296,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 9,
+        "name": "英英",
+        "giftValue": 244349,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 10,
+        "name": "小蛮",
+        "giftValue": 236496,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 11,
+        "name": "鱼儿",
+        "giftValue": 231074,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 12,
+        "name": "六六",
+        "giftValue": 229957,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 13,
+        "name": "丽娜",
+        "giftValue": 221403,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 14,
+        "name": "可星",
+        "giftValue": 177117,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 15,
+        "name": "菲儿",
+        "giftValue": 176862,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 16,
+        "name": "闻雨",
+        "giftValue": 162809,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 17,
+        "name": "梦妮",
+        "giftValue": 153741,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 18,
+        "name": "心缘",
+        "giftValue": 151435,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 19,
+        "name": "开心就好",
+        "giftValue": 149221,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 20,
+        "name": "可儿",
+        "giftValue": 146483,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 21,
+        "name": "香香",
+        "giftValue": 145018,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 22,
+        "name": "汐汐",
+        "giftValue": 123523,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 23,
+        "name": "巧儿",
+        "giftValue": 122008,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 24,
+        "name": "娜娜",
+        "giftValue": 110276,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 25,
+        "name": "幸福",
+        "giftValue": 111878,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 26,
+        "name": "瑶玥",
+        "giftValue": 103192,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 27,
+        "name": "糖小糖",
+        "giftValue": 100216,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 28,
+        "name": "雪菲",
+        "giftValue": 101885,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 29,
+        "name": "依依",
+        "giftValue": 98234,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 30,
+        "name": "卿卿",
+        "giftValue": 80748,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 31,
+        "name": "心彤",
+        "giftValue": 77399,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 32,
+        "name": "若兮",
+        "giftValue": 70725,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 33,
+        "name": "思思",
+        "giftValue": 70436,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 34,
+        "name": "诗瑶",
+        "giftValue": 65059,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "月影",
+        "giftValue": 51848,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "清香",
+        "giftValue": 54223,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "夏雨",
+        "giftValue": 51603,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "阿敏",
+        "giftValue": 50875,
+        "month": 7,
+        "year": 2024
+      },
+      {
+        "rank": 35,
+        "name": "静静",
+        "giftValue": 50167,
+        "month": 7,
+        "year": 2024
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+﻿{
+  "mcpServers": {
+    "browser-tool": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "cwd": "D:\\Code\\GuildMetrics"
+    }
+  }
+}
