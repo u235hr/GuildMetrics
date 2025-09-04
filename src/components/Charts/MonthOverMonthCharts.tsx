@@ -1,9 +1,6 @@
-
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { Card, Empty } from 'antd';
-
-
+import { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface MonthOverMonthChartsProps {
   data: Array<{
@@ -20,8 +17,6 @@ const formatYAxisTick = (value: number) => {
   if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
   return value.toString();
 };
-
-import { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 
 const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -43,7 +38,8 @@ const MonthOverMonthCharts: React.FC<MonthOverMonthChartsProps> = ({ data }) => 
   const hasData = data && data.length > 0;
 
   return (
-    <Card id="chart-container" title="月度趋势分析">
+    <div id="chart-container" className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+      <h2 className="text-xl font-bold mb-4 text-white">月度趋势分析</h2>
       {hasData ? (
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -61,11 +57,14 @@ const MonthOverMonthCharts: React.FC<MonthOverMonthChartsProps> = ({ data }) => 
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="h-80 flex justify-center items-center">
-          <Empty description="暂无足够数据进行趋势分析" />
+        <div className="h-80 flex flex-col justify-center items-center">
+          <svg className="w-16 h-16 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p className="text-white/60">暂无足够数据进行趋势分析</p>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 

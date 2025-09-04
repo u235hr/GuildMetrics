@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Layout } from 'antd';
 import Header from './Header';
 import ModernTopThreeDisplay from './ModernTopThreeDisplay';
 import ModernRankingTable from './ModernRankingTable';
 import useResponsive from '../hooks/useResponsive';
-
-const { Content } = Layout;
 
 const MainDashboard: React.FC = () => {
   const { isMobile } = useResponsive();
@@ -17,22 +14,26 @@ const MainDashboard: React.FC = () => {
 
   return (
     <div className="viewport-container">
-      <Layout className="adaptive-layout">
-        <Header />
-        <Content className="main-content-area">
-          <div className="dashboard-content-container">
-            {/* 前三名展示区域 - 固定合理高度，避免遮挡 */}
-            <div className="top-three-section">
-              <ModernTopThreeDisplay />
-            </div>
-
-            {/* 排行榜区域 - 自适应填满剩余空间，内部可滚动 */}
-            <div className="ranking-section">
-              <ModernRankingTable />
-            </div>
+      {/* 使用原生HTML元素和Tailwind CSS实现布局 */}
+      <div className="h-screen flex flex-col gap-4 p-4 bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
+        {/* Header占10%高度 */}
+        <div className="h-[10%]">
+          <Header />
+        </div>
+        
+        {/* 主要内容区域 */}
+        <div className="flex flex-col h-[90%] gap-4">
+          {/* Top 3排名卡片占30%高度 */}
+          <div className="h-[30%]">
+            <ModernTopThreeDisplay />
           </div>
-        </Content>
-      </Layout>
+
+          {/* 其余排名表格占65%高度 */}
+          <div className="h-[65%] pb-4">
+            <ModernRankingTable />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

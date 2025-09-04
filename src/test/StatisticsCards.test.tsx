@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ConfigProvider } from 'antd';
 import StatisticsCards from '../components/StatisticsCards';
 import { mockMonthlyData } from './testUtils';
 import * as store from '../store';
@@ -63,9 +62,9 @@ describe('StatisticsCards', () => {
 
   const renderStatisticsCards = () => {
     return render(
-      <ConfigProvider>
+      <div>
         <StatisticsCards />
-      </ConfigProvider>
+      </div>
     );
   };
 

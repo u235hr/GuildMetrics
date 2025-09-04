@@ -1,22 +1,10 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
-import { Card, Col, Row, Skeleton } from 'antd';
 import {
-  UserOutlined,
-  DollarCircleOutlined,
-  LikeOutlined,
-  PercentageOutlined,
-  AreaChartOutlined,
-  TrophyOutlined,
-  RiseOutlined,
-  FallOutlined,
-  MinusOutlined,
   TrendingUpIcon,
   StarIcon,
   FlameIcon
-} from '@ant-design/icons';
+} from 'lucide-react';
 import { useAppStore } from '../store';
-import { designSystem } from '../styles/design-system';
 import useResponsive from '../hooks/useResponsive';
 
 // 动态数字展示组件
@@ -90,9 +78,25 @@ const StatCard: React.FC<StatCardProps> = ({
   }, [delay]);
   
   const getTrendIcon = () => {
-    if (trend === 'up') return <RiseOutlined className="text-green-400" />;
-    if (trend === 'down') return <FallOutlined className="text-red-400" />;
-    return <MinusOutlined className="text-gray-400" />;
+    if (trend === 'up') {
+      return (
+        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      );
+    }
+    if (trend === 'down') {
+      return (
+        <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      );
+    }
+    return (
+      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"></path>
+      </svg>
+    );
   };
 
   const getTrendColor = () => {
@@ -262,15 +266,16 @@ const StatisticsCards: React.FC = () => {
 
   if (!summary) {
     return (
-      <Row gutter={[12, 12]}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
         {Array.from({ length: 6 }).map((_, index) => (
-          <Col xs={12} sm={8} lg={8} key={index}>
-            <div className="glass-card-dark h-20 compact-padding">
-              <Skeleton active paragraph={{ rows: 1 }} />
+          <div key={index} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 h-20">
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 bg-white/20 rounded w-3/4"></div>
+              <div className="h-6 bg-white/20 rounded w-1/2"></div>
             </div>
-          </Col>
+          </div>
         ))}
-      </Row>
+      </div>
     );
   }
 
@@ -278,7 +283,11 @@ const StatisticsCards: React.FC = () => {
     {
       title: '总礼物值',
       value: summary.totalGiftValue.toLocaleString(),
-      icon: <DollarCircleOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      ),
       gradient: 'rgba(59, 130, 246, 0.9), rgba(147, 197, 253, 0.8)',
       trend: 'up' as const,
       trendValue: 12.5,
@@ -287,7 +296,11 @@ const StatisticsCards: React.FC = () => {
     {
       title: '主播总数',
       value: summary.streamerCount,
-      icon: <UserOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+      ),
       gradient: 'rgba(16, 185, 129, 0.9), rgba(110, 231, 183, 0.8)',
       trend: 'up' as const,
       trendValue: 8.3,
@@ -296,7 +309,11 @@ const StatisticsCards: React.FC = () => {
     {
       title: '平均礼物值',
       value: summary.averageGiftValue.toLocaleString(),
-      icon: <AreaChartOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+      ),
       gradient: 'rgba(245, 158, 11, 0.9), rgba(251, 191, 36, 0.8)',
       trend: 'stable' as const,
       delay: 300
@@ -304,7 +321,11 @@ const StatisticsCards: React.FC = () => {
     {
       title: '达标人数',
       value: summary.qualifiedCount,
-      icon: <LikeOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+        </svg>
+      ),
       gradient: 'rgba(139, 92, 246, 0.9), rgba(196, 181, 253, 0.8)',
       trend: 'up' as const,
       trendValue: 15.2,
@@ -314,7 +335,11 @@ const StatisticsCards: React.FC = () => {
       title: '达标率',
       value: summary.qualificationRate,
       suffix: '%',
-      icon: <PercentageOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      ),
       gradient: 'rgba(34, 197, 94, 0.9), rgba(134, 239, 172, 0.8)',
       trend: 'up' as const,
       trendValue: 5.7,
@@ -324,7 +349,11 @@ const StatisticsCards: React.FC = () => {
       title: 'Top3占比',
       value: summary.topThreePercentage,
       suffix: '%',
-      icon: <TrophyOutlined style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+        </svg>
+      ),
       gradient: 'rgba(239, 68, 68, 0.9), rgba(252, 165, 165, 0.8)',
       trend: 'down' as const,
       trendValue: -2.1,
@@ -334,13 +363,13 @@ const StatisticsCards: React.FC = () => {
 
   return (
     <div className="statistics-cards-container">
-      <Row gutter={isMobile ? [8, 8] : [16, 16]} className="h-full">
+      <div className={`grid grid-cols-2 sm:grid-cols-3 ${isMobile ? 'gap-2' : 'gap-4'} h-full`}>
         {statsConfig.map((stat, index) => (
-          <Col xs={12} sm={8} lg={8} key={index} className="h-full">
+          <div key={index} className="h-full">
             <StatCard {...stat} />
-          </Col>
+          </div>
         ))}
-      </Row>
+      </div>
     </div>
   );
 };

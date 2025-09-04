@@ -4,15 +4,9 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, Row, Col, Spin, Empty, Typography } from 'antd';
 import { Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ComposedChart } from 'recharts';
-import { BarChartOutlined, PieChartOutlined, LineChartOutlined, TrophyOutlined } from '@ant-design/icons';
-import { ChartAnimation } from '../Animations';
-import { designSystem } from '../../styles/design-system';
 import useResponsive from '../../hooks/useResponsive';
 import type { MonthlyData } from '../../types';
-
-const { Title, Text } = Typography;
 
 interface ChartsProps {
   currentMonthData: MonthlyData | null;
@@ -194,19 +188,29 @@ const Charts: React.FC<ChartsProps> = ({
 
   if (loading) {
     return (
-      <Card title="数据图表" className="h-96">
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg h-96">
+        <h2 className="text-xl font-bold mb-4 text-white">数据图表</h2>
         <div className="flex items-center justify-center h-full">
-          <Spin size="large" tip="加载图表数据中..." />
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p className="text-white/80">加载图表数据中...</p>
+          </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (!currentMonthData) {
     return (
-      <Card title="数据图表" className="h-96">
-        <Empty description="暂无数据，请先上传月度数据文件" />
-      </Card>
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg h-96">
+        <h2 className="text-xl font-bold mb-4 text-white">数据图表</h2>
+        <div className="flex flex-col items-center justify-center h-full">
+          <svg className="w-16 h-16 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p className="text-white/60">暂无数据，请先上传月度数据文件</p>
+        </div>
+      </div>
     );
   }
 
@@ -215,7 +219,7 @@ const Charts: React.FC<ChartsProps> = ({
     background: `linear-gradient(135deg, ${CHART_COLORS.glassmorphism.background}, rgba(255, 255, 255, 0.05))`,
     backdropFilter: 'blur(10px)',
     border: `1px solid ${CHART_COLORS.glassmorphism.border}`,
-    borderRadius: designSystem.borderRadius.lg,
+    borderRadius: '1rem',
     boxShadow: CHART_COLORS.glassmorphism.shadow,
     overflow: 'hidden' as const
   };
@@ -226,7 +230,7 @@ const Charts: React.FC<ChartsProps> = ({
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
     fontWeight: 600,
-    fontSize: 'clamp(0.875rem, 2vw, 1rem)', // 响应式字体大小
+    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
     margin: 0
   };
 
@@ -243,395 +247,268 @@ const Charts: React.FC<ChartsProps> = ({
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
       }}>
-        <BarChartOutlined style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', color: CHART_COLORS.primary, marginBottom: 'clamp(0.5rem, 1vw, 0.75rem)' }} />
-        <Title level={2} style={{
+        <svg style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', color: CHART_COLORS.primary, marginBottom: 'clamp(0.5rem, 1vw, 0.75rem)' }} className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <h2 style={{
           background: `linear-gradient(135deg, ${CHART_COLORS.gradient.primary[0]}, ${CHART_COLORS.gradient.primary[1]})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
           margin: '8px 0 4px 0'
-        }}>
+        }} className="text-2xl font-bold">
           数据分析图表
-        </Title>
-        <Text style={{ color: '#666', fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>深度洞察主播表现数据，助力精准决策</Text>
+        </h2>
+        <p style={{ color: '#666', fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>深度洞察主播表现数据，助力精准决策</p>
       </div>
 
       <div className="space-y-6">
       {/* 趋势对比图 */}
       {trendData.length > 1 && (
-        <ChartAnimation delay={0.1}>
-          <Card title="月度趋势对比" className="w-full" style={cardStyle}>
-            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-              <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={CHART_COLORS.gradient.primary[0]} stopOpacity={0.8}/>
-                    <stop offset="50%" stopColor={CHART_COLORS.gradient.primary[1]} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={CHART_COLORS.gradient.primary[1]} stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={CHART_COLORS.gradient.success[0]} stopOpacity={0.8}/>
-                    <stop offset="50%" stopColor={CHART_COLORS.gradient.success[1]} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={CHART_COLORS.gradient.success[1]} stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.3)" />
-                <XAxis dataKey="month" stroke="#666" fontSize={12} />
-                <YAxis yAxisId="left" orientation="left" tickFormatter={formatGiftValue} stroke="#666" fontSize={12} />
-                <YAxis yAxisId="right" orientation="right" stroke="#666" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                  formatter={(value: number, name: string) => {
-                    if (name === 'totalGiftValue' || name === 'avgGiftValue') {
-                      return [formatGiftValue(value), name === 'totalGiftValue' ? '总礼物值' : '平均礼物值'];
-                    }
-                    return [value, name === 'streamerCount' ? '主播数量' : '达标人数'];
-                  }}
-                />
-                <Legend />
-                <Area 
-                  yAxisId="left"
-                  type="monotone" 
-                  dataKey="totalGiftValue" 
-                  stroke={CHART_COLORS.gradient.primary[0]}
-                  fillOpacity={1}
-                  fill="url(#colorTotal)"
-                  strokeWidth={3}
-                  name="总礼物值"
-                />
-                <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="streamerCount" 
-                    stroke={CHART_COLORS.gradient.warning[0]}
-                    strokeWidth={3}
-                    name="主播数量"
-                    dot={{ fill: CHART_COLORS.gradient.warning[0], strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: CHART_COLORS.gradient.warning[0], strokeWidth: 2 }}
-                  />
-                <Line 
+        <div style={cardStyle} className="w-full p-4 rounded-xl">
+          <h3 className="text-lg font-bold mb-4" style={titleStyle}>月度趋势对比</h3>
+          <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+            <AreaChart data={trendData}>
+              <defs>
+                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={CHART_COLORS.gradient.primary[0]} stopOpacity={0.8}/>
+                  <stop offset="50%" stopColor={CHART_COLORS.gradient.primary[1]} stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor={CHART_COLORS.gradient.primary[1]} stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={CHART_COLORS.gradient.success[0]} stopOpacity={0.8}/>
+                  <stop offset="50%" stopColor={CHART_COLORS.gradient.success[1]} stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor={CHART_COLORS.gradient.success[1]} stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.3)" />
+              <XAxis dataKey="month" stroke="#666" fontSize={12} />
+              <YAxis yAxisId="left" orientation="left" tickFormatter={formatGiftValue} stroke="#666" fontSize={12} />
+              <YAxis yAxisId="right" orientation="right" stroke="#666" fontSize={12} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                formatter={(value: number, name: string) => {
+                  if (name === 'totalGiftValue' || name === 'avgGiftValue') {
+                    return [formatGiftValue(value), name === 'totalGiftValue' ? '总礼物值' : '平均礼物值'];
+                  }
+                  return [value, name === 'streamerCount' ? '主播数量' : '达标人数'];
+                }}
+              />
+              <Legend />
+              <Area 
+                yAxisId="left"
+                type="monotone" 
+                dataKey="totalGiftValue" 
+                stroke={CHART_COLORS.gradient.primary[0]}
+                fillOpacity={1}
+                fill="url(#colorTotal)"
+                strokeWidth={3}
+                name="总礼物值"
+              />
+              <Line 
                   yAxisId="right"
                   type="monotone" 
-                  dataKey="qualifiedCount" 
-                  stroke={CHART_COLORS.gradient.success[0]}
+                  dataKey="streamerCount" 
+                  stroke={CHART_COLORS.gradient.warning[0]}
                   strokeWidth={3}
-                  name="达标人数"
-                  dot={{ fill: CHART_COLORS.gradient.success[0], strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: CHART_COLORS.gradient.success[0], strokeWidth: 2 }}
+                  name="主播数量"
+                  dot={{ fill: CHART_COLORS.gradient.warning[0], strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: CHART_COLORS.gradient.warning[0], strokeWidth: 2 }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
-        </ChartAnimation>
+              <Line 
+                yAxisId="right"
+                type="monotone" 
+                dataKey="qualifiedCount" 
+                stroke={CHART_COLORS.gradient.success[0]}
+                strokeWidth={3}
+                name="达标人数"
+                dot={{ fill: CHART_COLORS.gradient.success[0], strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: CHART_COLORS.gradient.success[0], strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       )}
 
-      <Row gutter={[isMobile ? 8 : 16, isMobile ? 8 : 16]}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 排名前10图表 */}
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <ChartAnimation delay={0.2}>
-            <Card title={isMobile ? "TOP10" : "礼物值排行榜 TOP10"} className="h-96" style={cardStyle}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topStreamersData} layout="horizontal">
-                  <defs>
-                    {topStreamersData.map((entry, index) => (
-                      <linearGradient key={`gradient-${index}`} id={`barGradient-${index}`} x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.3)" />
-                  <XAxis type="number" tickFormatter={formatGiftValue} stroke="#666" fontSize={isMobile ? 10 : 12} />
-                  <YAxis dataKey="name" type="category" width={isMobile ? 60 : 80} stroke="#666" fontSize={isMobile ? 10 : 12} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    formatter={(value: number) => [formatGiftValue(value), '礼物值']}
-                    labelFormatter={(label: string) => {
-                      const streamer = topStreamersData.find(s => s.name === label);
-                      return streamer ? streamer.fullName : label;
-                    }}
-                  />
-                  <Bar dataKey="giftValue" radius={[0, 8, 8, 0]}>
-                    {topStreamersData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#barGradient-${index})`} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </ChartAnimation>
-        </Col>
+        <div style={cardStyle} className="h-96 p-4 rounded-xl">
+          <h3 className="text-lg font-bold mb-4" style={titleStyle}>{isMobile ? "TOP10" : "礼物值排行榜 TOP10"}</h3>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={topStreamersData} layout="horizontal">
+              <defs>
+                {topStreamersData.map((entry, index) => (
+                  <linearGradient key={`gradient-${index}`} id={`barGradient-${index}`} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.3)" />
+              <XAxis type="number" tickFormatter={formatGiftValue} stroke="#666" fontSize={isMobile ? 10 : 12} />
+              <YAxis dataKey="name" type="category" width={isMobile ? 60 : 80} stroke="#666" fontSize={isMobile ? 10 : 12} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                formatter={(value: number) => [formatGiftValue(value), '礼物值']}
+                labelFormatter={(label: string) => {
+                  const streamer = topStreamersData.find(s => s.name === label);
+                  return streamer ? streamer.fullName : label;
+                }}
+              />
+              <Bar dataKey="giftValue" radius={[0, 8, 8, 0]}>
+                {topStreamersData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={`url(#barGradient-${index})`} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* 礼物值分布图 */}
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <ChartAnimation delay={0.3}>
-            <Card title="礼物值分布" className="h-96" style={cardStyle}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <defs>
-                    {distributionData.map((entry, index) => (
-                      <linearGradient key={`pieGradient-${index}`} id={`pieGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <Pie
-                    data={distributionData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={5}
-                    dataKey="count"
-                    label={({ name, percentage }) => `${name} ${formatPercentage(percentage)}`}
-                    labelLine={false}
-                  >
-                    {distributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#pieGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    formatter={(value: number, name: string, props: any) => [
-                      `${value}人 (${formatPercentage(props.payload?.percentage || 0)})`,
-                      '人数'
-                    ]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </ChartAnimation>
-        </Col>
+        <div style={cardStyle} className="h-96 p-4 rounded-xl">
+          <h3 className="text-lg font-bold mb-4" style={titleStyle}>礼物值分布</h3>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <defs>
+                {distributionData.map((entry, index) => (
+                  <linearGradient key={`pieGradient-${index}`} id={`pieGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
+                  </linearGradient>
+                ))}
+              </defs>
+              <Pie
+                data={distributionData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={120}
+                paddingAngle={5}
+                dataKey="count"
+                label={({ name, percentage }) => `${name} ${formatPercentage(percentage)}`}
+                labelLine={false}
+              >
+                {distributionData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={`url(#pieGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                formatter={(value: number, name: string, props: any) => [
+                  `${value}人 (${formatPercentage(props.payload?.percentage || 0)})`,
+                  '人数'
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* 前三名占月度流水比例图 */}
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <ChartAnimation delay={0.4}>
-            <Card title="前三名占月度流水比例" className="h-96" style={cardStyle}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <defs>
-                    {topThreeRatioData.map((entry, index) => (
-                      <linearGradient key={`topThreeGradient-${index}`} id={`topThreeGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <Pie
-                    data={topThreeRatioData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percentage }) => `${name}: ${formatPercentage(percentage)}`}
-                    labelLine={false}
-                  >
-                    {topThreeRatioData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#topThreeGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    formatter={(value: number, name: string, props: any) => [
-                      `${formatGiftValue(value)} (${formatPercentage(props.payload?.percentage || 0)})`,
-                      '礼物值'
-                    ]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </ChartAnimation>
-        </Col>
+        <div style={cardStyle} className="h-96 p-4 rounded-xl">
+          <h3 className="text-lg font-bold mb-4" style={titleStyle}>前三名占月度流水比例</h3>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <defs>
+                {topThreeRatioData.map((entry, index) => (
+                  <linearGradient key={`topThreeGradient-${index}`} id={`topThreeGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
+                  </linearGradient>
+                ))}
+              </defs>
+              <Pie
+                data={topThreeRatioData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={120}
+                paddingAngle={5}
+                dataKey="value"
+                label={({ name, percentage }) => `${name}: ${formatPercentage(percentage)}`}
+                labelLine={false}
+              >
+                {topThreeRatioData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={`url(#topThreeGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                formatter={(value: number, name: string, props: any) => [
+                  `${formatGiftValue(value)} (${formatPercentage(props.payload?.percentage || 0)})`,
+                  '礼物值'
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* 达标率图表 */}
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <ChartAnimation delay={0.5}>
-            <Card title={`达标率分析 (合格线: ${formatGiftValue(qualificationLine)})`} className="h-96" style={cardStyle}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <defs>
-                    {qualificationData.map((entry, index) => (
-                      <linearGradient key={`qualGradient-${index}`} id={`qualGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <Pie
-                    data={qualificationData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={120}
-                    dataKey="value"
-                    label={({ name, percentage }) => `${name}: ${formatPercentage(percentage)}`}
-                    labelLine={false}
-                  >
-                    {qualificationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#qualGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    formatter={(value: number, name: string, props: any) => [
-                      `${value}人 (${formatPercentage(props.payload?.percentage || 0)})`,
-                      '人数'
-                    ]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </ChartAnimation>
-        </Col>
-
-        {/* 月流水环比图 */}
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <ChartAnimation delay={0.6}>
-            <Card title="月流水环比分析" className="h-96" style={cardStyle}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={monthlyRevenueComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="revenueCurrentGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4facfe" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#00f2fe" stopOpacity={1}/>
-                    </linearGradient>
-                    <linearGradient id="revenueLastGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#a8edea" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#fed6e3" stopOpacity={1}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#666', fontSize: 12 }}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#666', fontSize: 12 }}
-                    tickFormatter={(value) => formatGiftValue(value)}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#666', fontSize: 12 }}
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    formatter={(value: number, name: string) => {
-                      if (name === '环比增长率') {
-                        return [`${value > 0 ? '+' : ''}${value.toFixed(1)}%`, name];
-                      }
-                      return [formatGiftValue(value), name];
-                    }}
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="current" name="本月流水" fill="url(#revenueCurrentGradient)" radius={[4, 4, 0, 0]} />
-                  <Bar yAxisId="left" dataKey="last" name="上月流水" fill="url(#revenueLastGradient)" radius={[4, 4, 0, 0]} />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="growthRate" 
-                    stroke="#ff6b6b" 
-                    strokeWidth={3}
-                    dot={{ fill: '#ff6b6b', strokeWidth: 2, r: 6 }}
-                    name="环比增长率"
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </Card>
-          </ChartAnimation>
-        </Col>
-
-        {/* 月度对比柱状图 */}
-        {trendData.length > 1 && (
-          <Col xs={24} sm={24} md={24} lg={12}>
-            <ChartAnimation delay={0.5}>
-              <Card title="月度关键指标对比" className="h-96" style={cardStyle}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={trendData}>
-                    <defs>
-                      <linearGradient id="avgGiftGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={CHART_COLORS.gradient.primary[0]} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={CHART_COLORS.gradient.primary[1]} stopOpacity={1}/>
-                      </linearGradient>
-                      <linearGradient id="qualifiedGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={CHART_COLORS.gradient.success[0]} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={CHART_COLORS.gradient.success[1]} stopOpacity={1}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.3)" />
-                    <XAxis dataKey="month" stroke="#666" fontSize={12} />
-                    <YAxis tickFormatter={formatGiftValue} stroke="#666" fontSize={12} />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                        backdropFilter: 'blur(10px)'
-                      }}
-                      formatter={(value: number, name: string) => {
-                        if (name === 'avgGiftValue') {
-                          return [formatGiftValue(value), '平均礼物值'];
-                        }
-                        return [value, name === 'qualifiedCount' ? '达标人数' : '主播数量'];
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="avgGiftValue" fill="url(#avgGiftGradient)" name="平均礼物值" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="qualifiedCount" fill="url(#qualifiedGradient)" name="达标人数" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-            </ChartAnimation>
-          </Col>
-        )}
-      </Row>
+        <div style={cardStyle} className="h-96 p-4 rounded-xl">
+          <h3 className="text-lg font-bold mb-4" style={titleStyle}>{`达标率分析 (合格线: ${formatGiftValue(qualificationLine)})`}</h3>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <defs>
+                {qualificationData.map((entry, index) => (
+                  <linearGradient key={`qualGradient-${index}`} id={`qualGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={entry.color} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={entry.color} stopOpacity={1}/>
+                  </linearGradient>
+                ))}
+              </defs>
+              <Pie
+                data={qualificationData}
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                dataKey="value"
+                label={({ name, percentage }) => `${name}: ${formatPercentage(percentage)}`}
+                labelLine={false}
+              >
+                {qualificationData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={`url(#qualGradient-${index})`} stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)'
+                }}
+                formatter={(value: number, name: string, props: any) => [
+                  `${value}人 (${formatPercentage(props.payload?.percentage || 0)})`,
+                  '人数'
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
       </div>
     </div>
   );
