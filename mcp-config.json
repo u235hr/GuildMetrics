@@ -3,7 +3,12 @@
     "browser-tool": {
       "command": "node",
       "args": ["mcp-server.js"],
-      "cwd": "D:\\Code\\GuildMetrics"
+      "cwd": "/Users/hur/code/GuildMetrics"
+    },
+    "browser-tools-mcp": {
+      "command": "npx",
+      "args": ["@agentdeskai/browser-tools-mcp@latest"],
+      "cwd": "/Users/hur/code/GuildMetrics"
     }
   }
 }

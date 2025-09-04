@@ -7,7 +7,7 @@ import TopThreeDisplay from '../../components/TopThreeDisplay';
 import RankingTable from '../../components/RankingTable';
 import { testData } from '@/data/testData';
 
-// 统一的数据类型
+// 脥鲁脪禄碌脛脢媒戮脻脌脿脨脥
 type Streamer = { rank: number; name: string; giftValue: number };
 
 type Monthly = {
@@ -64,26 +64,26 @@ const RankingPage: React.FC = () => {
   return (
     <div className="h-screen w-screen text-[min(1.5cqw,1.5cqh)] bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
       <div className="h-full w-full flex flex-col container-type-size">
-        {/* Header - 10% 高度 */}
+        {/* Header - 10% 赂脽露脠 */}
         <div className="h-[10cqh]">
           <Header />
         </div>
 
-        {/* 面包屑导航 */}
+        {/* 脙忙掳眉脨录碌录潞陆 */}
         <div className="text-[0.8em] text-white/60 px-[1em] py-[0.5em]">
           <nav className="flex">
-            <Link href="/" className="flex items-center hover:text-white transition-colors">主页</Link>
+            <Link href="/" className="flex items-center hover:text-white transition-colors">脰梅脪鲁</Link>
             <span className="mx-[0.5em]">/</span>
-            <span className="flex items-center text-white">排行榜</span>
+            <span className="flex items-center text-white">脜脜脨脨掳帽</span>
           </nav>
         </div>
 
-        {/* Top 3 卡片 - 30% 高度 */}
+        {/* Top 3 驴篓脝卢 - 30% 赂脽露脠 */}
         <div className="h-[30cqh]">
           <TopThreeDisplay data={topThreeData} />
         </div>
         
-        {/* 排名表格 - 50% 高度 */}
+        {/* 脜脜脙没卤铆赂帽 - 50% 赂脽露脠 */}
         <div className="h-[50cqh]">
           <RankingTable data={rankingTableData} />
         </div>

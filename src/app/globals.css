@@ -10,7 +10,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ÈİÆ÷²éÑ¯»ù´¡ÑùÊ½ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ */
 .container {
   background: rgba(40, 44, 77, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -21,7 +21,7 @@ body {
   padding: 1em;
 }
 
-/* ½ğÊôÖÊ¸Ğ½¥±ä */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½Ê¸Ğ½ï¿½ï¿½ï¿½ */
 .card-gold {
   background: linear-gradient(135deg, #FFD700, #DAA520);
 }
@@ -34,7 +34,7 @@ body {
   background: linear-gradient(135deg, #CD7F32, #A0522D);
 }
 
-/* »ÕÕÂÑùÊ½ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ */
 .medal-card {
   border-radius: 1em;
   padding: 1em;
@@ -48,7 +48,7 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* ¸ß¹â²ã */
+/* ï¿½ß¹ï¿½ï¿½ */
 .highlight-layer {
   position: absolute;
   inset: 0;
@@ -58,7 +58,7 @@ body {
   pointer-events: none;
 }
 
-/* ½¥±ä¶¯»­ */
+/* ï¿½ï¿½ï¿½ä¶¯ï¿½ï¿½ */
 @keyframes gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -69,7 +69,7 @@ body {
   animation: gradient 8s linear infinite;
 }
 
-/* ºôÎü¶¯»­ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 @keyframes breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -79,7 +79,7 @@ body {
   animation: breathe 3s ease-in-out infinite;
 }
 
-/* Âö³å¶¯»­ */
+/* ï¿½ï¿½ï¿½å¶¯ï¿½ï¿½ */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -90,7 +90,25 @@ body {
   animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ±í¸ñÈİÆ÷ÑùÊ½ */
+/* ä»ä¸‹ç¼˜ç”Ÿé•¿åŠ¨ç”» */
+@keyframes growFromBottom {
+  0% { 
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  100% { 
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+.animate-growFromBottom {
+  animation: growFromBottom 1.2s ease-out forwards;
+  transform-origin: bottom;
+  transform: scaleY(0); /* åˆå§‹çŠ¶æ€ */
+}
+
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ */
 .table-container {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 0.6em;
@@ -107,7 +125,7 @@ body {
   border-radius: 0.2em;
 }
 
-/* ×Ô¶¨Òå¹ö¶¯Ìõ */
+/* ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -126,7 +144,7 @@ body {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Í·ÏñÑùÊ½ */
+/* Í·ï¿½ï¿½ï¿½ï¿½Ê½ */
 .avatar {
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.5);
@@ -134,7 +152,7 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Í¼±êÑùÊ½ */
+/* Í¼ï¿½ï¿½ï¿½ï¿½Ê½ */
 .icon {
   width: 1em;
   height: 1em;
