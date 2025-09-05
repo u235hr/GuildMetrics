@@ -70,7 +70,7 @@ const MonthOverMonthAnalysis: React.FC = () => {
             </thead>
             <tbody>
               {comparisonData.streamerComparisons.map((record) => (
-                <tr key={record.name} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                <tr key={record.name} className="border-b border-white/5  transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <span className="text-white">{record.name}</span>
@@ -106,7 +106,7 @@ const MonthOverMonthAnalysis: React.FC = () => {
             显示 {comparisonData.streamerComparisons.length} 条记录
           </div>
           <div className="flex space-x-2">
-            <button className="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20 transition-colors text-sm">
+            <button className="px-3 py-1 bg-white/10 text-white rounded  transition-colors text-sm">
               1
             </button>
           </div>

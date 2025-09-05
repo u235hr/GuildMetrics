@@ -219,7 +219,7 @@ const StorageManager: React.FC = () => {
         {/* 操作按钮 */}
         <div className="flex flex-wrap gap-3">
           <button 
-            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg  transition-colors"
             onClick={() => setShowExportModal(true)}
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -229,7 +229,7 @@ const StorageManager: React.FC = () => {
           </button>
           
           <button 
-            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg  transition-colors"
             onClick={handleImportBackup}
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -239,7 +239,7 @@ const StorageManager: React.FC = () => {
           </button>
           
           <button 
-            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg  transition-colors"
             onClick={handleCleanupOldFiles}
             disabled={loading}
           >
@@ -255,7 +255,7 @@ const StorageManager: React.FC = () => {
           </button>
           
           <button 
-            className="flex items-center px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
+            className="flex items-center px-4 py-2 bg-red-500/20 text-red-400 rounded-lg  transition-colors border border-red-500/30"
             onClick={() => setShowConfirmModal(true)}
             disabled={loading}
           >
@@ -277,7 +277,7 @@ const StorageManager: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-white">上传历史</h2>
           <button 
-            className="text-sm px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20 transition-colors"
+            className="text-sm px-3 py-1 bg-white/10 text-white rounded  transition-colors"
             onClick={loadStorageStats}
           >
             刷新
@@ -296,7 +296,7 @@ const StorageManager: React.FC = () => {
               </thead>
               <tbody>
                 {uploadHistory.map((file, index) => (
-                  <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <tr key={index} className="border-b border-white/5  transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center">
                         <svg className="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -376,7 +376,7 @@ const StorageManager: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-white">导出数据备份</h3>
               <button 
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 "
                 onClick={() => setShowExportModal(false)}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -428,13 +428,13 @@ const StorageManager: React.FC = () => {
             
             <div className="flex justify-end space-x-3">
               <button
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg  transition-colors"
                 onClick={() => setShowExportModal(false)}
               >
                 取消
               </button>
               <button 
-                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg  transition-colors"
                 onClick={handleExportBackup}
                 disabled={loading}
               >
@@ -470,13 +470,13 @@ const StorageManager: React.FC = () => {
             
             <div className="flex justify-end space-x-3">
               <button
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg  transition-colors"
                 onClick={() => setShowConfirmModal(false)}
               >
                 取消
               </button>
               <button 
-                className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg  transition-colors"
                 onClick={handleClearAllData}
                 disabled={loading}
               >

@@ -6,12 +6,15 @@ import Header from '../../components/Header';
 import StatisticsCards from '../../components/StatisticsCards';
 import Charts from '../../components/Charts';
 import MonthOverMonthAnalysis from '../../components/MonthOverMonthAnalysis';
-import { useCurrentMonthData, useUserSettings, useMonthComparison } from '../../store';
+import { usePageStore } from '../../store';
 
 const DataAnalysisPage: React.FC = () => {
-  const currentMonthData = useCurrentMonthData();
-  const userSettings = useUserSettings();
-  const monthComparison = useMonthComparison();
+  const { selectedMonth } = usePageStore();
+  
+  // 模拟数据，实际应用中这些数据应该从API获取
+  const currentMonthData = { totalGifts: 0, totalUsers: 0, avgGifts: 0 };
+  const userSettings = { theme: 'dark', language: 'zh' };
+  const monthComparison = { current: 0, previous: 0, growth: 0 };
   
   // 构造 Charts 组件需要的 MonthlyData 格式
   const currentMonthDataFormatted = currentMonthData && currentMonthData.length > 0 ? {

@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -30,6 +30,30 @@ module.exports = {
             transform: 'translateY(0)'
           },
         },
+        flipIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'rotateY(-90deg) scale(0.95) translateZ(0)'
+          },
+          '50%': { 
+            opacity: '0.8',
+            transform: 'rotateY(-10deg) scale(0.99) translateZ(0)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'rotateY(0deg) scale(1) translateZ(0)'
+          },
+        },
+        growFromBottom: {
+          '0%': { 
+            height: '0',
+            opacity: '0'
+          },
+          '100%': { 
+            height: '100%',
+            opacity: '1'
+          },
+        },
         pulse: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
@@ -39,6 +63,8 @@ module.exports = {
         gradient: 'gradient 8s linear infinite',
         breathe: 'breathe 3s ease-in-out infinite',
         fadeInUp: 'fadeInUp 0.5s ease-out forwards',
+        flipIn: 'flipIn 0.8s ease-out forwards',
+        growFromBottom: 'growFromBottom 1s ease-out forwards',
         pulse: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       colors: {

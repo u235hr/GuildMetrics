@@ -83,7 +83,7 @@ const DataImport: React.FC = () => {
       <div className="flex flex-col space-y-4">
         {/* 拖拽上传区域 */}
         <div 
-          className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-blue-400 hover:bg-white/5"
+          className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center cursor-pointer transition-colors "
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
@@ -170,7 +170,7 @@ const DataImport: React.FC = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               fileList.length === 0 
                 ? 'bg-gray-500/30 text-white/50 cursor-not-allowed' 
-                : 'bg-white/10 text-white hover:bg-white/20'
+                : 'bg-white/10 text-white '
             }`}
           >
             清空
@@ -181,7 +181,7 @@ const DataImport: React.FC = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center ${
               fileList.length === 0 || uploadStatus.status === 'uploading' || uploadStatus.status === 'parsing'
                 ? 'bg-blue-500/30 text-white/50 cursor-not-allowed' 
-                : 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'bg-blue-500 text-white '
             }`}
           >
             {(uploadStatus.status === 'uploading' || uploadStatus.status === 'parsing') && (

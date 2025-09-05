@@ -1,0 +1,358 @@
+---
+description: guildmetrics项目规范
+alwaysApply: false
+---
+# 项目技术与设计规范
+
+## 1. 核心设计原则
+
+本规范旨在确保项目在视觉与技术实现上的一致性、可维护性和高质量。
+
+- **容器自适应**: 所有组件和元素都应基于其父容器的大小进行等比缩放，而非整个视口。
+  - **实现**: 在组件根元素上使用 `container-type: size` 开启容器查询上下文。
+- **相对单位**:
+  - **字体**: 使用容器查询单位 `cqw` / `cqh` 作为根 `font-size` 基准，例如 `text-[min(2cqw,2cqh)]`。
+  - **尺寸与间距**: 组件内部所有尺寸（`width`, `height`）、间距（`gap`, `padding`）、装饰（`border-radius`）等均使用 `em` 单位，以继承基准字体大小，实现等比缩放。
+- **严格约束**:
+  - **禁止固定像素**: 严禁在 CSS 中使用 `px` 单位，以防破坏自适应布局。
+  - **禁止内联样式**: 样式应通过 Tailwind CSS 功能类或外部 CSS 文件定义，保持代码整洁。
+  - **禁止溢出**: 任何元素都不能超出其父容器的边界。
+
+---
+
+## 2. 技术栈 (Technology Stack)
+
+- **框架 (Framework)**: Next.js 15+
+- **样式 (Styling)**: Tailwind CSS
+- **状态管理 (State Management)**: Zustand
+- **数据处理 (Data Handling)**: `xlsx`
+
+---
+
+## 3. 整体视觉风格
+
+- **主题**: 结合现代科技感与数据权威性，营造专业、清晰、富有荣誉感的视觉体验。
+- **配色**:
+  - **主背景**: 深色渐变 (`#1A1A2E` -> `#0F0F1B`)，可选颗粒纹理增加质感。
+  - **容器背景**: 半透明深蓝紫色 `rgba(40, 44, 77, 0.9)`，结合 `backdrop-filter: blur(8px)` 实现毛玻璃效果。
+  - **核心元素**: 金 (`#FFD700`)、银 (`#C0C0C0`)、铜 (`#CD7F32`) 金属质感渐变，用于 Top 3 卡片和徽章。
+  - **交互色**: 蓝色渐变 (`#3B82F6` -> `#2563EB`) 用于按钮。
+  - **文字色**: 主文字为白色 (`#FFFFFF`)，次要文字为 `rgba(255, 255, 255, 0.7)`。
+  - **指示色**: 增长为红色 (`#FF4D4F`)，减少为绿色 (`#4CAF50`)。
+- **字体**: `Inter` 或 `Roboto` 无衬线字体，权重 `400` (正文) 至 `700` (标题)。
+
+---
+
+## 4. 页面与组件布局规范
+
+### 4.1. 总体布局
+
+- **全屏自适应**: 布局应占满屏幕宽度，不允许水平滚动条和垂直滚动条（组件内部按需滚动）。
+- **组件间隙**: 
+  - 多个组件在同一行时，若合计比例不足 100%，剩余空间作为间隙。
+  - 多个组件在同一列时，若合计比例不足 100%，剩余空间作为间隙。
+
+### 4.2. Header 导航
+
+- **尺寸**: 占屏幕高度 `10%` (`h-[10cqh]`)。
+- **布局**:
+  - **左侧 (1/4)**: LOGO、公会名、系统名称。
+  - **中间 (1/2)**: "排行榜"、"数据分析"、"数据维护"三个导航按钮，水平居中均匀分布。
+  - **右侧 (1/4)**: 月份切换下拉菜单，居右对齐。
+- **默认页面**: "排行榜"。
+
+### 4.3. Ranking (排行榜) 页面
+
+#### 4.3.1. Top 3 排名卡片
+
+- **尺寸**: 占屏幕高度 `30%` (`h-[30cqh]`)。
+- **布局**:
+  - 以金、银、铜牌三张卡片展示礼物榜前三名。
+  - 金牌在中间，银牌在左边，铜牌在右边
+  - 卡片采用 `flex` 布局，`flex-direction: column`，内容居中对齐。
+  - **层级与大小**: 冠军卡片在最前 (`z-30`) 且最大 (`scale-110`)，亚军 (`scale-100`)、季军 (`scale-90`) 依次递减，形成视觉层次。
+- **卡片内部元素**:
+  - **徽章**: 左上角显示"冠军"、"亚军"、"季军"图标
+  - **文字**: 左上角显示"冠军"、"亚军"、"季军"图标下方对应文字"冠军"、"亚军"、"季军"。
+  - **头像**: 中心偏上。
+  - **主播名**: 头像下方。
+  - **礼物数值**: 主播名下方。
+
+#### 4.3.2. Rest-Ranking (其余排名) 表格
+
+- **尺寸**: 占屏幕高度 `50%` (`h-[50cqh]`)。
+- **功能**:
+  - 以表格形式展示第四名及以后的主播排名。
+  - 表头固定，内容区域可垂直滚动。
+- **列定义与宽度**:
+  - `排名` (15%)
+  - `主播名` (25%)
+  - `礼物值` (30%)
+  - `环比增长` (15%)
+  - `同比增长` (15%)
+
+### 4.4. 其他页面
+
+- **Data-Analysis (数据分析)**: 待定，暂不开发。
+- **Data-Maintenance (数据维护)**: 待定，暂不开发。
+- **竖屏布局**: 暂不开发。
+
+---
+
+## 5. 组件实现与代码示例
+
+### 5.1. 容器与背景
+
+- **页面根容器**:
+    ```css
+    body {
+      background: linear-gradient(135deg, #1A1A2E 0%, #0F0F1B 100%);
+      background-attachment: fixed;
+      font-family: 'Inter', sans-serif;
+      color: #FFFFFF;
+    }
+    ```
+- **通用内容容器** (如 Header, 表格容器等):
+    ```css
+    .container {
+      background: rgba(40, 44, 77, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6em;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      container-type: size; /* 关键：开启容器查询 */
+      padding: 1em;
+    }
+    ```
+
+### 5.2. Header 组件
+
+- **状态管理 (Zustand)**:
+    ```ts
+    // lib/store.ts
+    import { create } from 'zustand';
+
+    type PageState = {
+      activePage: 'ranking' | 'analysis' | 'maintenance';
+      setActivePage: (page: PageState['activePage']) => void;
+      selectedMonth: string;
+      setSelectedMonth: (month: string) => void;
+    };
+
+    export const usePageStore = create<PageState>((set) => ({
+      activePage: 'ranking',
+      setActivePage: (page) => set({ activePage: page }),
+      selectedMonth: '2025-09', // 默认月份
+      setSelectedMonth: (month) => set({ selectedMonth: month }),
+    }));
+    ```
+- **Header 组件 (React)**:
+    ```tsx
+    // components/Header.tsx
+    'use client';
+    import { usePageStore } from '@/lib/store';
+    import { useRouter } from 'next/navigation';
+
+    export default function Header() {
+      const { activePage, setActivePage, selectedMonth, setSelectedMonth } = usePageStore();
+      const router = useRouter();
+      // ... 实现略 ...
+    }
+    ```
+
+### 5.3. Top 3 排名卡片
+
+- **卡片样式**:
+    ```css
+    .medal-card {
+      border-radius: 1em;
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 2px 2px 6px rgba(255, 255, 255, 0.6),
+                  inset -4px -4px 8px rgba(0,0,0,0.3),
+                  0 8px 12px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-gold { background: linear-gradient(135deg, #FFD700, #DAA520); }
+    .card-silver { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); }
+    .card-bronze { background: linear-gradient(135deg, #CD7F32, #A0522D); }
+    ```
+- **徽章实现**: 
+  - **策略**: 徽章应作为独立的 React 组件，由 SVG 图标和文字组成，以确保矢量缩放和样式灵活性。
+  - **结构**: 底部为 SVG 形状（如奖牌），其颜色通过 CSS 控制；上层为"冠军"等文字。
+  - **伪代码示例**:
+      ```tsx
+      const Badge = ({ rank, text }) => {
+        const styles = {
+          1: { color: 'text-yellow-400' }, // 金
+          2: { color: 'text-gray-300' },  // 银
+          3: { color: 'text-orange-400' } // 铜
+        };
+        return (
+          <div className="absolute top-2 left-2">
+            <svg className={`w-8 h-8 ${styles[rank].color}`} viewBox="0 0 24 24">
+              {/* 奖牌/绶带的 SVG Path */}
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">
+              {text}
+            </span>
+          </div>
+        );
+      }
+      ```
+- **Top 3 卡片组件 (React)**:
+    ```tsx
+    // components/RankingCards.tsx
+    import Image from 'next/image';
+    import CountUp from 'react-countup';
+
+    export default function RankingCards({ data }) {
+      // data 结构: { rank, name, amount, avatarPath }
+      return (
+        <div className="flex justify-center items-center gap-4 h-full">
+          {data.map((item) => {
+            const positionClass =
+              item.rank === 1
+                ? "z-30 scale-110 -translate-y-2"
+                : item.rank === 2
+                  ? "z-20 scale-100"
+                  : "z-10 scale-90 translate-y-2";
+
+            return (
+              <div key={item.rank} className={`medal-card card-${item.style} transform ${positionClass}`}>
+                {/* <Badge rank={item.rank} text={...} /> */}
+                <Image src={item.avatarPath} alt={item.name} width={64} height={64} className="w-[4em] h-[4em] rounded-full ..." />
+                <h3>{item.name}</h3>
+                <p>￥<CountUp end={item.amount} duration={2} separator="," /></p>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    ```
+
+### 5.4. 排名表格
+
+- **容器与滚动条样式**:
+    ```css
+    .table-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.6em;
+      overflow-y: auto; /* 允许内容滚动 */
+      height: 100%; /* 占满父容器高度 */
+    }
+    /* 自定义滚动条 */
+    .table-container::-webkit-scrollbar { width: 0.4em; }
+    .table-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 0.2em;
+    }
+    ```
+
+---
+
+## 6. 页面状态设计
+
+为确保用户体验的完整性，页面需要处理加载、空数据和错误三种状态。
+
+### 6.1. 加载状态 (Loading State)
+
+- **策略**: 在获取和解析数据期间，使用骨架屏 (Skeleton Screen) 作为占位符。
+- **设计**: Top 3 卡片和排名表格的骨架应模仿真实组件的布局、尺寸和圆角，并使用微弱的脉冲动画来提示加载过程。
+- **实现**:
+    ```css
+    .skeleton-pulse {
+      background-color: rgba(255, 255, 255, 0.1);
+      animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    ```
+
+### 6.2. 空状态 (Empty State)
+
+- **策略**: 当月无数据时，在页面中心显示提示信息。
+- **设计**: 一个居中的信息框，包含一个"空数据"图标和提示文字（如"当前月份无排名数据"），样式与整体容器风格保持一致。
+
+### 6.3. 错误状态 (Error State)
+
+- **策略**: 数据加载失败（如文件不存在、解析失败）时，显示错误提示。
+- **设计**: 一个居中的信息框，包含"错误"图标、错误信息（如"数据加载失败，请稍后重试"）和一个"重试"按钮，该按钮将重新触发数据获取逻辑。
+
+---
+
+## 7. 数据处理
+
+- **数据源**: 按月命名的 Excel 表（如 `data-2025-09.xlsx`）。
+- **头像**: 存储于 `/public/avatars/`，以"主播名字.jpg/png"命名。客户端在加载时应动态检测后缀，若均失败则使用默认头像。
+- **增长计算**:
+  - 为计算"环比增长"和"同比增长"，API 路由在获取当月（`M`）数据时，应**同时尝试**读取上一个月（`M-1`）和去年同月（`M-12`）的 Excel 文件。
+  - 在 API 返回的数据中，为每条记录增加 `mom_growth` 和 `yoy_growth` 字段。如果历史数据不存在，值为 `null`。
+  - **注意**: 此文件读取方式仅为原型阶段设计。生产环境建议使用数据库以获得更好的性能和可扩展性。
+- **API 路由 (Next.js)**:
+    ```ts
+    // app/api/ranking/route.ts
+    import { readFileSync } from 'fs';
+    import XLSX from 'xlsx';
+
+    export async function GET(request: Request) {
+      const { searchParams } = new URL(request.url);
+      const month = searchParams.get('month') || '2025-09'; // e.g., '2025-09'
+      
+      // ... 此处添加读取当月、上月、去年同月三个文件的逻辑 ...
+      // ... 然后计算 mom_growth 和 yoy_growth ...
+
+      const rankingData = data.map((row: any) => ({
+        name: row['主播名字'],
+        amount: row['礼物值'],
+        avatarPath: `/avatars/${row['主播名字']}`,
+        mom_growth: /* ... calculated value ... */,
+        yoy_growth: /* ... calculated value ... */,
+      }));
+
+      return Response.json(rankingData);
+    }
+    ```
+
+---
+
+## 8. 动画规范
+
+动画的目标是增强信息表达，而不是喧宾夺主。整体风格保持简洁、顺滑、呼吸感。  
+统一参数：
+- **时长**：200–400ms（列表变动可到 500ms）
+- **缓动函数**：`easeInOut`
+- **循环动画**：≥2s 一次，避免刺眼
+
+### 8.1 加载状态 (top3 礼物值)卡片
+- **数字**
+    - 动画：CountUp（数字递增滚动）
+    - 库：[reactbits CountUp](https://reactbits.dev/text-animations/count-up)
+
+- **名字**
+    - 动画：渐变文字（top3 主播名字）
+    - 库：[reactbits Gradient Text](https://reactbits.dev/text-animations/gradient-text)
+
+- **头像**
+    - 动画：呼吸/缩放（top3 主播头像）
+    - 辅助效果：边框渐变光效
+    - 实现：Framer Motion 或 Tailwind 动画类
+
+### 8.2 排名列表（rest-ranking）
+- **列表整体**
+    - 动画：Animated List（插入、删除、重新排序时平滑过渡）
+    - 库：[reactbits Animated List](https://reactbits.dev/components/animated-list)
+
+### 8.3 补充说明
+- 动画应服务于数据变化，避免过度复杂。
+- 设计必须性能为先，大屏项目需要长时间运行。
+- 禁用hover效果。
+- 帧率最高限制在90帧。
+- Top3 与普通排名的动画风格要区分，但保持整体一致性。
+- 所有动画均需响应容器查询，确保在不同屏幕宽度下表现一致。

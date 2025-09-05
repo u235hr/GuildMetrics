@@ -71,7 +71,7 @@ const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
   const config = getRankConfig(rank);
   const IconComponent = config.icon;
   return (
-    <mark className={cn('inline-flex items-center gap-1 px-[0.75rem] py-[0.25rem] text-sm font-bold transition-all duration-300 hover:scale-105 rounded', config.className)}>
+    <mark className={cn('inline-flex items-center gap-1 px-[0.75rem] py-[0.25rem] text-sm font-bold transition-all duration-300  rounded', config.className)}>
       <IconComponent className="w-4 h-4" />
       <strong>{rank}</strong>
     </mark>
