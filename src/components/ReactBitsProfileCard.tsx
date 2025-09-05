@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import './ReactBitsProfileCard.css';
+import Medal from './Medal';
 
 type RankItem = {
   rank: number;
@@ -41,25 +42,25 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
       case 1:
         return {
           gradient: 'linear-gradient(145deg,#FFD700 0%,#FFA500 100%)',
-          medal: '🥇',
+          medal: '',
           medalColor: 'text-yellow-500'
         };
       case 2:
         return {
           gradient: 'linear-gradient(145deg,#C0C0C0 0%,#A9A9A9 100%)',
-          medal: '🥈',
+          medal: '',
           medalColor: 'text-gray-500'
         };
       case 3:
         return {
           gradient: 'linear-gradient(145deg,#CD7F32 0%,#A0522D 100%)',
-          medal: '🥉',
+          medal: '',
           medalColor: 'text-amber-600'
         };
       default:
         return {
           gradient: 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)',
-          medal: '🏅',
+          medal: '',
           medalColor: 'text-gray-500'
         };
     }
@@ -177,59 +178,61 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
   );
 
   return (
-    <div
-      ref={wrapRef}
-      className={`pc-card-wrapper ${getCardSize(item.rank)} transform-gpu animate-flipIn`}
-      style={{
-        animationDelay: getAnimationDelay(index),
-        animationFillMode: 'both',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        ...cardStyle
-      }}
-    >
-      <section ref={cardRef} className="pc-card">
-        <div className="pc-inside">
-          <div className="pc-shine" />
-          <div className="pc-glare" />
-          
-          {/* 奖牌 - 右上角 */}
-          <div className="absolute top-[0.5rem] right-[0.5rem] z-20">
-            <div className={`text-[min(4vw,2rem)] drop-shadow-lg ${colors.medalColor}`}>
-              {colors.medal}
-            </div>
-          </div>
-
-          {/* 排名数字 - 左上角 */}
-          <div className="absolute top-[0.5rem] left-[0.5rem] z-20">
-            <div className="w-[min(3vw,2rem)] h-[min(3vw,2rem)] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <span className="text-white font-bold text-[min(1.5vw,0.875rem)] drop-shadow-lg">#{item.rank}</span>
-            </div>
-          </div>
-
-          {/* 头像内容 */}
-          <div className="pc-content pc-avatar-content">
-            <img
-              className="avatar"
-              src={item.avatar}
-              alt={`${item.name} avatar`}
-              loading="lazy"
-              onError={e => {
-                const target = e.target;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-
-          {/* 用户信息 */}
-          <div className="pc-content">
-            <div className="pc-details">
-              <h3>{item.name}</h3>
-              <p>¥{item.amount.toLocaleString()}</p>
-            </div>
-          </div>
+    <div className="relative inline-block">
+      {/* 左上角 SVG 奖牌 */}
+      {item.rank <= 3 && (
+        <div className="absolute -top-6 -left-6 z-30">
+          <Medal rank={item.rank as 1 | 2 | 3} size={60} />
         </div>
-      </section>
+      )}
+      
+      <div
+        ref={wrapRef}
+        className={`pc-card-wrapper ${getCardSize(item.rank)} transform-gpu animate-flipIn`}
+        style={{
+          animationDelay: getAnimationDelay(index),
+          animationFillMode: 'both',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          ...cardStyle
+        }}
+      >
+        <section ref={cardRef} className="pc-card">
+          <div className="pc-inside">
+            <div className="pc-shine" />
+            <div className="pc-glare" />
+            
+            {/* 奖牌 - 右上角 */}
+            <div className="absolute top-[0.5rem] right-[0.5rem] z-20">
+              <div className={`text-[min(4vw,2rem)] drop-shadow-lg ${colors.medalColor}`}>
+                {colors.medal}
+              </div>
+            </div>
+
+            {/* 头像内容 */}
+            <div className="pc-content pc-avatar-content">
+              <img
+                className="avatar"
+                src={item.avatar}
+                alt={`${item.name} avatar`}
+                loading="lazy"
+                onError={e => {
+                  const target = e.target;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+
+            {/* 用户信息 */}
+            <div className="pc-content">
+              <div className="pc-details">
+                <h3>{item.name}</h3>
+                <p>{item.amount.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

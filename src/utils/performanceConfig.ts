@@ -1,97 +1,108 @@
-/**
- * 生产环境性能优化配置
- * 专为7x24小时数据大屏设计
+﻿/**
+ * 性能优化配置
+ * 在不牺牲视觉效果的前提下，最大化性能
  */
 
-export const PERFORMANCE_CONFIG = {
-  // 禁用所有交互动画（鼠标跟随、hover效果等）
-  DISABLE_INTERACTIONS: true,
+export const performanceConfig = {
+  // 帧率设置
+  frameRate: {
+    target: 80,        // 目标帧率80fps
+    max: 80,          // 最大帧率80fps
+    min: 30,          // 最小可接受帧率30fps
+    warning: 25       // 性能警告阈值25fps
+  },
   
-  // 简化动画（只保留必要的入场动画）
-  SIMPLIFIED_ANIMATIONS: true,
+  // 内存管理
+  memory: {
+    warning: 250,     // 内存警告阈值250MB
+    critical: 300,    // 内存严重警告阈值300MB
+    gcInterval: 30000 // 垃圾回收间隔30秒
+  },
   
-  // 帧率控制
-  TARGET_FPS: 75, // 目标帧率75fps
-  MIN_FPS: 60,    // 最低帧率60fps
-  MAX_FPS: 90,    // 最高帧率90fps，避免浪费性能
+  // 渲染优化
+  rendering: {
+    // 减少不必要的重渲染
+    debounceTime: 16,     // 防抖时间16ms (约60fps)
+    throttleTime: 33,     // 节流时间33ms (约30fps)
+    
+    // 动画优化
+    animationFrameSkip: 2, // 每2帧更新一次动画
+    backgroundThrottle: 5  // 后台时每5帧更新一次
+  },
   
-  // 内存监控阈值
-  MEMORY_WARNING_THRESHOLD: 100, // MB
-  MEMORY_CRITICAL_THRESHOLD: 200, // MB
-  
-  // FPS监控阈值
-  FPS_WARNING_THRESHOLD: 50,  // 低于50fps警告
-  FPS_CRITICAL_THRESHOLD: 30, // 低于30fps严重警告
-  FPS_WASTE_THRESHOLD: 95,    // 高于95fps浪费性能
-  
-  // 自动刷新配置（防止内存泄漏）
-  AUTO_REFRESH_HOURS: 6, // 6小时自动刷新一次
-  
-  // 数据更新频率
-  DATA_UPDATE_INTERVAL: 60000, // 1分钟
-  
-  // CSS动画优化
-  USE_GPU_ACCELERATION: true,
-  
-  // 减少重排重绘
-  BATCH_DOM_UPDATES: true,
-  
-  // 帧率优化
-  FRAME_RATE_LIMIT: true
-};
-
-export const isProductionMode = () => {
-  return process.env.NODE_ENV === 'production' || 
-         window.location.hostname !== 'localhost';
-};
-
-export const shouldUsePerformanceMode = () => {
-  return isProductionMode() || 
-         window.location.search.includes('perf=1');
-};
-
-/**
- * 内存清理工具
- */
-export const memoryCleanup = () => {
-  // 强制垃圾回收（如果浏览器支持）
-  if ((window as any).gc) {
-    (window as any).gc();
+  // 监控优化
+  monitoring: {
+    // 减少监控频率
+    updateInterval: 1000,  // 监控更新间隔1秒
+    logInterval: 5000,     // 日志输出间隔5秒
+    
+    // 只在开发环境启用详细监控
+    enableDetailedLogs: process.env.NODE_ENV === 'development'
   }
+};
+
+// 性能优化工具函数
+export const performanceUtils = {
+  // 节流函数
+  throttle: (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    let lastExecTime = 0;
+    return function (...args: any[]) {
+      const currentTime = Date.now();
+      if (currentTime - lastExecTime > delay) {
+        func.apply(this, args);
+        lastExecTime = currentTime;
+      } else {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          func.apply(this, args);
+          lastExecTime = Date.now();
+        }, delay - (currentTime - lastExecTime));
+      }
+    };
+  },
   
-  // 清理可能的内存泄漏
-  const images = document.querySelectorAll('img');
-  images.forEach(img => {
-    if (img.src.startsWith('blob:')) {
-      URL.revokeObjectURL(img.src);
+  // 防抖函数
+  debounce: (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return function (...args: any[]) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+  },
+  
+  // 内存使用检查
+  getMemoryUsage: () => {
+    if ('memory' in performance) {
+      const memory = (performance as any).memory;
+      return {
+        used: Math.round(memory.usedJSHeapSize / 1024 / 1024),
+        total: Math.round(memory.totalJSHeapSize / 1024 / 1024),
+        limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024)
+      };
     }
-  });
+    return { used: 0, total: 0, limit: 0 };
+  },
+  
+  // 强制垃圾回收（仅在开发环境）
+  forceGC: () => {
+    if (process.env.NODE_ENV === 'development' && 'gc' in window) {
+      (window as any).gc();
+    }
+  }
 };
 
-/**
- * 自动刷新机制（防止长时间运行导致的内存累积）
- */
-export const setupAutoRefresh = () => {
-  if (!isProductionMode()) return;
-  
-  const refreshInterval = PERFORMANCE_CONFIG.AUTO_REFRESH_HOURS * 60 * 60 * 1000;
-  
-  setTimeout(() => {
-    console.log('数据大屏自动刷新...');
-    window.location.reload();
-  }, refreshInterval);
-  
-  // 每小时清理一次内存
-  setInterval(memoryCleanup, 60 * 60 * 1000);
+// 设置帧率限制
+export const setupFrameRateLimit = (targetFPS: number = 80) => {
+  const frameRateLimit = new (require('./frameRateLimit').FrameRateLimit)(targetFPS);
+  return frameRateLimit;
 };
 
-/**
- * 设置全局帧率限制
- * 注意：帧率限制现在由PerformanceMonitor组件统一管理
- * 此函数已废弃，保留以避免破坏性更改
- */
-export const setupFrameRateLimit = () => {
-  // 帧率限制现在由PerformanceMonitor组件统一管理
-  // 不再需要独立的监控循环
-  console.log(`帧率限制由PerformanceMonitor组件管理`);
+// 设置自动刷新
+export const setupAutoRefresh = (interval: number = 5000) => {
+  return setInterval(() => {
+    if (process.env.NODE_ENV === 'development') {
+      performanceUtils.forceGC();
+    }
+  }, interval);
 };
