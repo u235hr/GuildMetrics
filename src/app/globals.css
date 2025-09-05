@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 数据大屏优化：只禁用过渡动画，保留所有视觉效果 */
+@layer base {
+  * {
+    transition: none !important;
+  }
+  
+  /* 只禁用特定的hover交互，保留卡片视觉效果 */
+  button:hover,
+  .hover\:bg-white\/20:hover,
+  .hover\:bg-white\/5:hover,
+  .hover\:bg-blue-600:hover,
+  .hover\:bg-gray-700:hover,
+  .hover\:bg-red-600:hover,
+  .hover\:scale-105:hover {
+    background: inherit !important;
+    color: inherit !important;
+    transform: inherit !important;
+    scale: inherit !important;
+  }
+  
+  /* 禁用卡片的hover交互，但保留所有视觉效果 */
+  .pc-card-wrapper:hover {
+    transform: none !important;
+  }
+  
+  .pc-card-wrapper:hover::before {
+    filter: inherit !important;
+    transform: inherit !important;
+  }
+}
+
 body {
   color: rgb(255 255 255 / 0.9);
   background: linear-gradient(135deg, #1A1A2E 0%, #0F0F1B 100%);
@@ -57,6 +88,7 @@ body {
   opacity: 0.2;
   pointer-events: none;
 }
+
 
 /* ���䶯�� */
 @keyframes gradient {

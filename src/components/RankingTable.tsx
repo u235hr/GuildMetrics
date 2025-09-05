@@ -40,7 +40,7 @@ export default function RankingTable({ data }: RankingTableProps) {
         </thead>
         <tbody>
           {data.map((item) => (
-            <tr key={`${item.rank}-${item.name}`} data-testid={`row-${item.rank}-${item.name}`} className="border-t border-white/10 hover:bg-white/5 transition-colors duration-200">
+            <tr key={`${item.rank}-${item.name}`} data-testid={`row-${item.rank}-${item.name}`} className="border-t border-white/10 transition-colors duration-200">
               <td className="p-3 text-white/80">{item.rank}</td>
               <td className="p-3 text-white/90 font-medium">{item.name}</td>
               <td className="p-3 text-white/80">¥{item.amount.toLocaleString()}</td>

@@ -12,7 +12,7 @@ export default function Header() {
   ];
 
   const navButtonBase = "h-[2.5em] w-[7em] px-[1.2em] py-[0.6em] flex items-center justify-center rounded-[0.4em] text-white text-[1em] font-semibold border-2 transition-all duration-300";
-  const navButtonInactive = "bg-white/10 hover:bg-white/20 border-white/20";
+  const navButtonInactive = "bg-white/10 border-white/20";
   const navButtonActive = "bg-blue-500/50 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.7)]";
 
   return (
@@ -47,8 +47,8 @@ export default function Header() {
           onChange={(e) => setSelectedMonth(e.target.value)}
           autoComplete="off"
         >
-          <option value="2025-07">2025年7月</option>
           <option value="2025-06">2025年6月</option>
+          <option value="2025-07">2025年7月</option>
         </select>
       </div>
     </header>

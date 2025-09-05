@@ -97,7 +97,7 @@ const DataExport: React.FC = () => {
   return (
     <div className="relative">
       <button
-        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg  transition-colors"
         onClick={() => setShowDropdown(!showDropdown)}
       >
         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -114,7 +114,7 @@ const DataExport: React.FC = () => {
           ></div>
           <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-20">
             <button
-              className="flex items-center w-full px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors rounded-t-lg"
+              className="flex items-center w-full px-4 py-3 text-left text-white  transition-colors rounded-t-lg"
               onClick={handleExportXLSX}
             >
               <svg className="w-5 h-5 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -123,7 +123,7 @@ const DataExport: React.FC = () => {
               导出为 Excel
             </button>
             <button
-              className="flex items-center w-full px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors rounded-b-lg"
+              className="flex items-center w-full px-4 py-3 text-left text-white  transition-colors rounded-b-lg"
               onClick={handleExportImage}
               disabled={exporting}
             >
