@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import './ReactBitsProfileCard.css';
-import Medal from './Medal';
+
 
 type RankItem = {
   rank: number;
@@ -27,15 +27,16 @@ const ANIMATION_CONFIG = {
   DEVICE_BETA_OFFSET: 20
 };
 
-const clamp = (value, min = 0, max = 100) => Math.min(Math.max(value, min), max);
-const round = (value, precision = 3) => parseFloat(value.toFixed(precision));
-const adjust = (value, fromMin, fromMax, toMin, toMax) =>
+// Add proper TypeScript types to utility functions
+const clamp = (value: number, min: number = 0, max: number = 100) => Math.min(Math.max(value, min), max);
+const round = (value: number, precision: number = 3) => parseFloat(value.toFixed(precision));
+const adjust = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) =>
   round(toMin + ((toMax - toMin) * (value - fromMin)) / (fromMax - fromMin));
-const easeInOutCubic = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const easeInOutCubic = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
 const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
-  const wrapRef = useRef(null);
-  const cardRef = useRef(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const getRankColors = (rank: number) => {
     switch (rank) {
@@ -88,104 +89,155 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
     const baseDelay = 0.5; // 等待背景渲染完成
     if (index === 0) return `${baseDelay + 0.4}s`;    // 银牌第二（左边）
     if (index === 1) return `${baseDelay + 0.8}s`;    // 金牌最后（中间）
-    if (index === 2) return `${baseDelay}s`;          // 铜牌第一（右边）
-    return `${baseDelay}s`;
+    if (index === 2) return `${baseDelay + 0.2}s`;    // 铜牌第一（右边）
+    return `${baseDelay + 0.2}s`;
   };
 
+  const cardStyle = useMemo(() => ({
+    '--behind-gradient': DEFAULT_BEHIND_GRADIENT,
+    '--inner-gradient': colors.gradient
+  }), [colors.gradient]);
+
+  // 3D倾斜效果处理
   const animationHandlers = useMemo(() => {
-    let rafId = null;
+    let rafId: number | null = null;
 
-    const updateCardTransform = (offsetX, offsetY, card, wrap) => {
-      const width = card.clientWidth;
-      const height = card.clientHeight;
-
-      const percentX = clamp((100 / width) * offsetX);
-      const percentY = clamp((100 / height) * offsetY);
-
-      const centerX = percentX - 50;
-      const centerY = percentY - 50;
-
-      const properties = {
-        '--pointer-x': `${percentX}%`,
-        '--pointer-y': `${percentY}%`,
-        '--background-x': `${adjust(percentX, 0, 100, 35, 65)}%`,
-        '--background-y': `${adjust(percentY, 0, 100, 35, 65)}%`,
-        '--pointer-from-center': `${clamp(Math.hypot(percentY - 50, percentX - 50) / 50, 0, 1)}`,
-        '--pointer-from-top': `${percentY / 100}`,
-        '--pointer-from-left': `${percentX / 100}`,
-        '--rotate-x': `${round(-(centerX / 5))}deg`,
-        '--rotate-y': `${round(centerY / 4)}deg`
-      };
-
-      Object.entries(properties).forEach(([property, value]) => {
-        wrap.style.setProperty(property, value);
-      });
+    const updateCardTransform = (offsetX: number, offsetY: number, card: HTMLElement, wrap: HTMLElement) => {
+      const rect = wrap.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const deltaX = (offsetX - centerX) / centerX;
+      const deltaY = (offsetY - centerY) / centerY;
+      
+      const rotateX = deltaY * -15;
+      const rotateY = deltaX * 15;
+      
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
     };
 
-    const createSmoothAnimation = (duration, startX, startY, card, wrap) => {
+    const createSmoothAnimation = (duration: number, startX: number, startY: number, card: HTMLElement, wrap: HTMLElement) => {
       const startTime = performance.now();
-      const targetX = wrap.clientWidth / 2;
-      const targetY = wrap.clientHeight / 2;
-
-      const animationLoop = currentTime => {
+      const rect = wrap.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const startDeltaX = (startX - centerX) / centerX;
+      const startDeltaY = (startY - centerY) / centerY;
+      const startRotateX = startDeltaY * -15;
+      const startRotateY = startDeltaX * 15;
+      
+      const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
-        const progress = clamp(elapsed / duration);
-        const easedProgress = easeInOutCubic(progress);
-
-        const currentX = adjust(easedProgress, 0, 1, startX, targetX);
-        const currentY = adjust(easedProgress, 0, 1, startY, targetY);
-
-        updateCardTransform(currentX, currentY, card, wrap);
-
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        const rotateX = startRotateX * (1 - easeOut);
+        const rotateY = startRotateY * (1 - easeOut);
+        const scale = 1 + (0.05 * (1 - easeOut));
+        
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale}, ${scale}, ${scale})`;
+        
         if (progress < 1) {
-          rafId = requestAnimationFrame(animationLoop);
+          rafId = requestAnimationFrame(animate);
+        } else {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
         }
       };
-
-      rafId = requestAnimationFrame(animationLoop);
+      
+      rafId = requestAnimationFrame(animate);
     };
 
     return {
       updateCardTransform,
-      createSmoothAnimation,
-      cancelAnimation: () => {
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-      }
+      createSmoothAnimation
     };
   }, []);
 
-  // 数据大屏不需要任何鼠标交互
-  const handlePointerMove = useCallback(() => {}, []);
-  const handlePointerEnter = useCallback(() => {}, []);
-  const handlePointerLeave = useCallback(() => {}, []);
+  const handlePointerMove = useCallback((event: React.PointerEvent) => {
+    const card = cardRef.current;
+    const wrap = wrapRef.current;
+    if (!card || !wrap || !animationHandlers) return;
 
-  useEffect(() => {
-    // 数据大屏不需要任何鼠标交互，完全禁用
-    return () => {
-      animationHandlers.cancelAnimation();
-    };
+    animationHandlers.updateCardTransform(event.nativeEvent.offsetX, event.nativeEvent.offsetY, card, wrap);
   }, [animationHandlers]);
 
-  const cardStyle = useMemo(
-    () => ({
-      '--behind-gradient': DEFAULT_BEHIND_GRADIENT,
-      '--inner-gradient': colors.gradient
-    }),
-    [colors.gradient]
-  );
+  const handlePointerEnter = useCallback((event: React.PointerEvent) => {
+    const card = cardRef.current;
+    const wrap = wrapRef.current;
+    if (!card || !wrap || !animationHandlers) return;
 
+    wrap.classList.add('active');
+    card.classList.add('active');
+  }, [animationHandlers]);
+
+  const handlePointerLeave = useCallback((event: React.PointerEvent) => {
+    const card = cardRef.current;
+    const wrap = wrapRef.current;
+    if (!card || !wrap || !animationHandlers) return;
+
+    animationHandlers.createSmoothAnimation(600, event.nativeEvent.offsetX, event.nativeEvent.offsetY, card, wrap);
+    wrap.classList.remove('active');
+    card.classList.remove('active');
+  }, [animationHandlers]);
+
+  // 如果是金牌，使用特殊布局
+  if (item.rank === 1) {
+    return (
+      <div className="relative inline-block">
+        <div
+          ref={wrapRef}
+          className={`pc-card-wrapper ${getCardSize(item.rank)} transform-gpu animate-flipIn`}
+          style={{
+            animationDelay: getAnimationDelay(index),
+            animationFillMode: 'both',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            ...cardStyle
+          }}
+        >
+          <section 
+            ref={cardRef} 
+            className="pc-card"
+            onPointerMove={handlePointerMove}
+            onPointerEnter={handlePointerEnter}
+            onPointerLeave={handlePointerLeave}
+          >
+            <div className="pc-inside">
+              <div className="pc-shine" />
+              <div className="pc-glare" />
+            </div>
+            
+            {/* 金牌特殊布局 - 头像占上半部四分之三 */}
+            <div className="pc-avatar-section">
+              <div className="pc-avatar-container">
+                <img
+                  className="pc-avatar"
+                  src={item.avatar}
+                  alt={`${item.name} avatar`}
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* 金牌特殊布局 - 内容占下半部四分之一 */}
+            <div className="pc-content-section">
+              <h3 className="pc-name">{item.name}</h3>
+              <p className="pc-amount">{item.amount.toLocaleString()}</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  // 其他奖牌保持原有效果
   return (
     <div className="relative inline-block">
-      {/* 左上角 SVG 奖牌 */}
-      {item.rank <= 3 && (
-        <div className="absolute -top-6 -left-6 z-30">
-          <Medal rank={item.rank as 1 | 2 | 3} size={60} />
-        </div>
-      )}
-      
       <div
         ref={wrapRef}
         className={`pc-card-wrapper ${getCardSize(item.rank)} transform-gpu animate-flipIn`}
@@ -204,7 +256,7 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
             
             {/* 奖牌 - 右上角 */}
             <div className="absolute top-[0.5rem] right-[0.5rem] z-20">
-              <div className={`text-[min(4vw,2rem)] drop-shadow-lg ${colors.medalColor}`}>
+              <div className={`text-[min(4vw,2rem)] drop-shadow-lg`}>
                 {colors.medal}
               </div>
             </div>
@@ -217,7 +269,7 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
                 alt={`${item.name} avatar`}
                 loading="lazy"
                 onError={e => {
-                  const target = e.target;
+                  const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
               />

@@ -6,7 +6,7 @@ import RankingTable from '@/components/RankingTable';
 import { testData } from '@/data/testData';
 import { usePageStore } from '@/store';
 import { setupAutoRefresh, setupFrameRateLimit } from '@/utils/performanceConfig';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect } from 'react';
 
 export default function Home() {
   const { selectedMonth } = usePageStore();
@@ -18,16 +18,18 @@ export default function Home() {
     console.log('[App] Performance optimizations initialized');
   }, []);
 
-  // 根据选择的月份获取数据 - 使用useMemo缓存
-  const currentData = useMemo(() => {
+  // 根据选择的月份获取数据
+  const getCurrentData = () => {
     if (selectedMonth === '2025-07') {
       return testData.july2024;
     }
     return testData.june2024; // 默认6月数据
-  }, [selectedMonth]);
+  };
+
+  const currentData = getCurrentData();
   
-  // 头像映射函数 - 使用useCallback缓存
-  const getAvatar = useCallback((name: string) => {
+  // 头像映射函数 - 根据名字分配不同的头像
+  const getAvatar = (name: string) => {
     const avatarColors = [
       '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
       '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'
@@ -42,28 +44,24 @@ export default function Home() {
     const encodedSvg = encodeURIComponent(svgContent);
     
     return `data:image/svg+xml,${encodedSvg}`;
-  }, []);
+  };
 
-  // 转换数据格式以匹配ReactBitsTopThreeDisplay的期望格式 - 使用useMemo缓存
-  const topThreeData = useMemo(() => {
-    return currentData.streamers.slice(0, 3).map(streamer => ({
-      rank: streamer.rank,
-      name: streamer.name,
-      amount: streamer.giftValue,
-      avatar: getAvatar(streamer.name)
-    }));
-  }, [currentData, getAvatar]);
+  // 转换数据格式以匹配ReactBitsTopThreeDisplay的期望格式
+  const topThreeData = currentData.streamers.slice(0, 3).map(streamer => ({
+    rank: streamer.rank,
+    name: streamer.name,
+    amount: streamer.giftValue,
+    avatar: getAvatar(streamer.name)
+  }));
 
-  // 转换数据格式以匹配RankingTable的期望格式（4名之后的数据） - 使用useMemo缓存
-  const rankingData = useMemo(() => {
-    return currentData.streamers.slice(3).map(streamer => ({
-      rank: streamer.rank,
-      name: streamer.name,
-      amount: streamer.giftValue,
-      mom_growth: 0, // 暂时设为0，后续可以计算真实增长率
-      yoy_growth: 0
-    }));
-  }, [currentData]);
+  // 转换数据格式以匹配RankingTable的期望格式（4名之后的数据）
+  const rankingData = currentData.streamers.slice(3).map(streamer => ({
+    rank: streamer.rank,
+    name: streamer.name,
+    amount: streamer.giftValue,
+    mom_growth: 0, // 暂时设为0，后续可以计算真实增长率
+    yoy_growth: 0
+  }));
 
   console.log('Current data:', currentData);
   console.log('Top three data:', topThreeData);

@@ -1,13 +1,22 @@
 ﻿{
-    "mcpServers":  {
-                       "browser-tools":  {
-                                             "args":  [
-                                                          "@agentdeskai/browser-tools-mcp@latest"
-                                                      ],
-                                             "env":  {
-                                                         "BROWSER_TOOLS_SERVER_URL":  "http://localhost:3025"
-                                                     },
-                                             "command":  "npx"
-                                         }
-                   }
+    "mcpServers": {
+        "browser-tools": {
+            "args": [
+                "@agentdeskai/browser-tools-mcp@latest"
+            ],
+            "env": {
+                "BROWSER_TOOLS_SERVER_URL": "http://localhost:3025"
+            },
+            "command": "npx"
+        },
+        "playwright": {
+            "args": [
+                "@playwright/mcp@latest"
+            ],
+            "env": {
+                "PLAYWRIGHT_BROWSER": "chromium"
+            },
+            "command": "npx"
+        }
+    }
 }
