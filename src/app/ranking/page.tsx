@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
-import TopThreeDisplay from '../../components/TopThreeDisplay';
+import MetalCardDisplay from '../../components/MetalCardDisplay';
 import RankingTable from '../../components/RankingTable';
 import { testData } from '@/data/testData';
 
@@ -80,7 +80,7 @@ const RankingPage: React.FC = () => {
 
         {/* Top 3 ¿¨Æ¬ - 30% ¸ß¶È */}
         <div className="h-[30cqh]">
-          <TopThreeDisplay data={topThreeData} />
+          <MetalCardDisplay data={topThreeData} />
         </div>
         
         {/* ÅÅÃû±í¸ñ - 50% ¸ß¶È */}
