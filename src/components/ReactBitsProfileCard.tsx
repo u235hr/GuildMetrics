@@ -18,37 +18,23 @@ const ReactBitsProfileCard = ({ item, index }: ReactBitsProfileCardProps) => {
   const getRankColors = (rank: number) => {
     switch (rank) {
       case 1:
-        return {
-          medal: '',
-          medalColor: 'text-yellow-800'
-        };
+        return { medal: '', medalColor: 'text-yellow-800' };
       case 2:
-        return {
-          medal: '',
-          medalColor: 'text-gray-700'
-        };
+        return { medal: '', medalColor: 'text-gray-700' };
       case 3:
-        return {
-          medal: '',
-          medalColor: 'text-orange-800'
-        };
+        return { medal: '', medalColor: 'text-orange-800' };
       default:
-        return {
-          medal: '',
-          medalColor: 'text-gray-600'
-        };
+        return { medal: '', medalColor: 'text-gray-600' };
     }
   };
 
   const colors = getRankColors(item.rank);
 
   return (
-    <div className="w-full h-full relative flex flex-col items-center justify-center p-2">
-      {/* ?? - ?? */}
+    <div className="w-full h-full flex flex-col items-center justify-center p-2">
+      {/* ?? */}
       <div className="text-2xl mb-2">
-        <span className={colors.medalColor}>
-          {colors.medal}
-        </span>
+        <span className={colors.medalColor}>{colors.medal}</span>
       </div>
 
       {/* ?? */}
