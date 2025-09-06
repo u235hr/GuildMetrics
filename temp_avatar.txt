@@ -1,0 +1,9 @@
+﻿  // 头像映射函数 - 使用本地美女头像
+  const getAvatar = useCallback((rank: number) => {
+    const avatars = {
+      1: '/avatars/champion.png',
+      2: '/avatars/runner.png', 
+      3: '/avatars/third.png'
+    };
+    return avatars[rank] || '/globe.svg';
+  }, []);

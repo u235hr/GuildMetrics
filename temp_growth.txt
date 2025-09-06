@@ -1,0 +1,9 @@
+﻿const GrowthText = ({ value }: { value: number | undefined }) => {
+  if (value === undefined || value === 0) {
+      return <span className="font-semibold text-white/50">-</span>;
+  }
+  const isPositive = value > 0;
+  const text = isPositive ? +% : ${value.toFixed(1)}%;
+  const colorClass = isPositive ? "text-red-400" : "text-green-400";
+  return <span className={ont-semibold }>{text}</span>;
+};

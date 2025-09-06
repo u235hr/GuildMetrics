@@ -1,32 +1,29 @@
-'use client';
+﻿'use client';
 
-import React from 'react';
+import { usePageStore } from '@/store';
+import Header from '@/components/Header';
+import DataImport from '@/components/DataImport';
 import Link from 'next/link';
-import Header from '../../components/Header';
-import DataImport from '../../components/DataImport';
 
-const DataImportPage: React.FC = () => {
+export default function DataImportPage() {
+  const { selectedMonth } = usePageStore();
+
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
-      <div className="h-[10%]">
-        <Header />
-      </div>
-      
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-7xl mx-auto">
-          {/* 面包屑导航 */}
-          <nav className="flex text-sm text-gray-400 mb-4">
+    <div className="h-screen w-screen @container text-[min(1.5cqw,1.5cqh)] bg-gradient-to-br from-[#1A1A2E] to-[#0F0F1B]">
+      <div className="h-full w-full flex flex-col">
+        {/* Header - 固定高度 */}
+        <div className="h-[10cqh]">
+          <Header />
+        </div>
+
+        {/* 面包屑导航 */}
+        <div className="text-[0.8em] text-white/60 px-[1em] py-[0.5em]">
+          <nav className="flex">
             <Link href="/" className="flex items-center hover:text-white transition-colors">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-              </svg>
               主页
             </Link>
-            <span className="mx-2">/</span>
+            <span className="mx-[0.5em]">/</span>
             <span className="flex items-center text-white">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-              </svg>
               数据导入
             </span>
           </nav>
@@ -49,6 +46,4 @@ const DataImportPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default DataImportPage;
+}
