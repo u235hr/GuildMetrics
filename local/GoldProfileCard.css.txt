@@ -1,0 +1,116 @@
+/* app/components/GoldProfileCard.css */
+
+/* 定义默认的 CSS 变量 */
+.gold-profile-card-wrapper {
+  /* 启用 3D 空间 */
+  perspective: 500px;
+  /* 防止子像素渲染问题 */
+  transform: translate3d(0, 0, 0.1px);
+  /* 相对定位，方便内部元素绝对定位 */
+  position: relative;
+  /* 禁用默认触摸行为，让自定义动画更流畅 */
+  touch-action: none;
+}
+
+/* 卡片本体样式 */
+.gold-profile-card {
+  /* 填满父容器 */
+  width: 100%;
+  height: 100%;
+  /* 设置圆角 */
+  border-radius: 1.5cqw; /* 使用 cqw，随容器宽度缩放 */
+  /* 设置背景渐变（金牌风格） */
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  /* 添加阴影，增强立体感 */
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.6),
+    inset 0 0 10px rgba(0, 0, 0, 0.2);
+  /* 应用 3D 旋转动画（由 JS 动态设置） */
+  transform: translate3d(0, 0, 0.1px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
+  /* 设置动画过渡，让摆动更平滑 */
+  transition: transform 0.1s ease-out;
+  /* 防止内容溢出 */
+  overflow: hidden;
+  /* 启用硬件加速 */
+  will-change: transform;
+}
+
+/* 卡片内部容器 */
+.gold-profile-inside {
+  /* 填满卡片 */
+  width: 100%;
+  height: 100%;
+  /* 使用 Flex 布局，方便垂直水平居中内容 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* 内边距，使用 cqmin 确保在不同宽高比下都合适 */
+  padding: 2cqmin;
+  /* 相对定位，方便子元素定位 */
+  position: relative;
+}
+
+/* 头像区域 */
+.gold-profile-avatar {
+  /* 头像区域自身不占空间，绝对定位 */
+  position: absolute;
+  /* 水平居中 */
+  left: 50%;
+  /* 距离顶部 20% */
+  top: 20%;
+  /* 通过 transform 精确居中 */
+  transform: translateX(-50%);
+}
+
+/* 头像图片 */
+.gold-profile-avatar .avatar {
+  /* 圆形头像 */
+  border-radius: 50%;
+  /* 边框 */
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  /* 阴影 */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  /* 使用 cqw 控制大小，随容器缩放 */
+  width: 15cqw;
+  height: 15cqw;
+  /* 保持图片比例 */
+  object-fit: cover;
+}
+
+/* 用户信息区域 */
+.gold-profile-details {
+  /* 放在底部 */
+  margin-top: auto;
+  /* 文字居中 */
+  text-align: center;
+  /* 底部内边距 */
+  padding-bottom: 2cqmin;
+}
+
+/* 名字样式 */
+.gold-profile-name {
+  /* 字体加粗 */
+  font-weight: bold;
+  /* 字号使用 cqmin，随容器缩放 */
+  font-size: 2.5cqmin;
+  /* 颜色 */
+  color: #000;
+  /* 防止文字过长 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* 文字阴影，增强可读性 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 金额样式 */
+.gold-profile-value {
+  /* 字体加粗 */
+  font-weight: bold;
+  /* 字号使用 cqmin，比名字稍大 */
+  font-size: 3cqmin;
+  /* 颜色 */
+  color: #000;
+  /* 文字阴影 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}

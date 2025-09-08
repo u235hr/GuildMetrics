@@ -1,0 +1,243 @@
+/* app/components/goldprofilecard.css */
+
+/* :root 选择器指向文档的根元素，在这里定义全局 CSS 变量是一种最佳实践 */
+:root {
+  /* --- 动画驱动变量 --- */
+  /* 这些变量由 JS 在每一帧动态更新，用来驱动动画效果 */
+  --pointer-x: 50%;             /* 虚拟光标的 X 轴位置 (百分比) */
+  --pointer-y: 50%;             /* 虚拟光标的 Y 轴位置 (百分比) */
+  --pointer-from-center: 0;     /* 虚拟光标距离卡片中心的距离 (0 到 1) */
+  --pointer-from-top: 0.5;      /* 虚拟光标距离顶部的距离 (0 到 1) */
+  --pointer-from-left: 0.5;     /* 虚拟光标距离左侧的距离 (0 到 1) */
+  --rotate-x: 0deg;             /* 卡片绕 X 轴旋转的角度 */
+  --rotate-y: 0deg;             /* 卡片绕 Y 轴旋转的角度 */
+  --background-x: 50%;          /* 某些背景层的位置 X */
+  --background-y: 50%;          /* 某些背景层的位置 Y */
+  --card-opacity: 1;            /* 卡片辉光的不透明度，设为1表示默认开启 */
+
+  /* --- 样式配置变量 --- */
+  /* cqw 是“容器查询宽度”单位，1cqw 等于容器宽度的 1%。这让圆角大小能随卡片宽度自适应 */
+  --card-radius: 1.5cqw;
+
+  /* --- 金色主题颜色变量 --- */
+  /* 把颜色定义成变量，方便以后统一修改主题 */
+  --gold-1: #FFD700; /* Gold - 亮金色 */
+  --gold-2: #FFA500; /* Orange - 橙色 */
+  --gold-3: #B8860B; /* DarkGoldenRod - 暗金黄色 */
+  --gold-4: #DAA520; /* GoldenRod - 金麒麟色 */
+  --gold-5: #F0E68C; /* Khaki - 卡其色 */
+  --gold-6: #FFDEAD; /* NavajoWhite - 纳瓦白 */
+}
+
+/* 卡片最外层的包裹容器 */
+.gpc-card-wrapper {
+  /* perspective 属性定义了 3D 元素距离视图的距离，就像设置一个虚拟的“摄像机” */
+  /* 值越小，3D 效果越夸张。800px 是一个比较舒服的距离 */
+  perspective: 800px;
+  /* 开启硬件加速，防止某些浏览器下字体抖动 */
+  transform: translate3d(0, 0, 0.1px);
+  /* 相对定位，是内部绝对定位元素的“锚点” */
+  position: relative;
+  /* 禁用默认的触摸滚动等行为，让我们的动画更顺畅 */
+  touch-action: none;
+}
+
+/* 卡片外发光效果，使用 ::before 伪元素生成 */
+.gpc-card-wrapper::before {
+  content: ''; /* 伪元素必须有 content 属性 */
+  position: absolute; /* 绝对定位，相对于 gpc-card-wrapper */
+  inset: -15px; /* 定位到父元素的外部 15px，让辉光在卡片之外 */
+  border-radius: var(--card-radius); /* 跟随卡片的圆角 */
+  /* 使用径向渐变模拟光晕，中心点由 JS 的 --pointer-x/y 变量控制 */
+  background: radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y),
+    hsla(45, 100%, 50%, 0.8) 0%,
+    hsla(35, 100%, 55%, 0.6) 20%,
+    hsla(25, 100%, 60%, 0) 100%);
+  filter: blur(30px); /* 高斯模糊，制造柔和的辉光效果 */
+  transform: scale(0.95); /* 轻微缩小，让光晕更集中 */
+  opacity: var(--card-opacity); /* 不透明度 */
+  transition: opacity 0.5s; /* 过渡效果，虽然现在没用上，但保留着没坏处 */
+}
+
+/* 卡片本体 */
+.gpc-card {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--card-radius);
+  position: relative;
+  /* 混合模式，让多个背景层能以特殊方式叠加，产生奇妙的颜色反应 */
+  background-blend-mode: color-dodge, normal, normal, normal;
+  /* 根据虚拟光标位置生成一个动态的、有立体感的阴影 */
+  box-shadow: rgba(0, 0, 0, 0.6) 
+    calc((var(--pointer-from-left) * 12px) - 6px) 
+    calc((var(--pointer-from-top) * 12px) - 6px) 24px -5px;
+  /* 核心！卡片的 3D 旋转，角度由 JS 控制 */
+  transform: translate3d(0, 0, 0.1px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+  /* 定义多个背景层的尺寸和位置 */
+  background-size: 100% 100%, 100% 100%, 150% 150%, 200% 200%;
+  background-position: 0 0, 0 0, 50% 50%, var(--background-x) var(--background-y);
+  /* 定义4个背景层，从上到下叠加，共同构成复杂的金色卡面 */
+  background-image:
+    /* 1. 顶层：根据光标位置变化的径向高光 */
+    radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y),
+      hsla(51, 100%, 70%, 0.8) 4%,
+      hsla(45, 100%, 60%, 0.5) 10%,
+      hsla(35, 90%, 50%, 0.3) 50%,
+      hsla(0, 0%, 0%, 0) 100%),
+    /* 2. 第二层：卡片左上角的一个固定径向亮色 */
+    radial-gradient(35% 52% at 55% 20%, hsla(50, 100%, 80%, 0.7) 0%, hsla(35, 100%, 50%, 0) 100%),
+    /* 3. 第三层：卡片中心的一个巨大但微弱的径向光 */
+    radial-gradient(100% 100% at 50% 50%, hsla(48, 100%, 90%, 0.5) 1%, hsla(0, 0%, 0%, 0) 76%),
+    /* 4. 底层：基础的金色线性渐变 */
+    linear-gradient(135deg, var(--gold-4), var(--gold-2));
+  overflow: hidden; /* 隐藏所有超出卡片圆角的内容 */
+  /* 性能优化：告诉浏览器这些属性会经常变化，请做好准备 */
+  will-change: transform, background-position, box-shadow;
+}
+
+/* 卡片内所有子元素（用 * 通配符选择）的通用样式 */
+.gpc-card * {
+  display: grid; /* 使用 grid 布局，方便元素重叠 */
+  grid-area: 1/-1; /* 让所有元素都填充到 grid 的同一个区域，实现堆叠 */
+  border-radius: var(--card-radius); /* 继承卡片的圆角 */
+  transform: translate3d(0, 0, 0.1px); /* 统一开启硬件加速 */
+  pointer-events: none; /* 穿透鼠标事件，防止干扰上层逻辑 */
+}
+
+/* 卡片内部的容器，主要是做一层深色内背景和内边框效果 */
+.gpc-inside {
+  inset: 1px; /* 距离父元素（gpc-card）边缘 1px，形成细边框效果 */
+  position: absolute;
+  background-color: rgba(40, 25, 0, 0.85); /* 深棕色半透明底 */
+  background-image: linear-gradient(145deg, hsla(45, 50%, 60%, 0.2) 0%, hsla(35, 80%, 40%, 0.2) 100%); /* 再叠加一层微弱的渐变增加质感 */
+  transform: translate3d(0, 0, 0.01px); /* 放在一个极近的 3D 平面 */
+}
+
+/* 全息光泽效果层 (Holographic Shine) */
+.gpc-shine {
+  transform: translate3d(0, 0, 1px); /* 放在 Z 轴更靠前的位置 */
+  z-index: 3; /* 确保它在内容之上 */
+  background: transparent;
+  /* color-dodge 混合模式，会提亮底层颜色，产生类似火焰的效果 */
+  mix-blend-mode: color-dodge;
+  /* 通过滤镜调整亮度、对比度、饱和度，让光泽更锐利 */
+  filter: brightness(0.9) contrast(1.4) saturate(1.2);
+  opacity: 0.8;
+  background-size: 500% 500%, 300% 300%, 200% 200%;
+  background-position: 
+    0 var(--background-y), 
+    var(--background-x) var(--background-y), 
+    center;
+  background-repeat: repeat;
+  /* 这是最复杂的部分，用多个渐变背景叠加来模拟全息卡纹理 */
+  background-image:
+    /* 1. 彩虹条纹：用 repeating-linear-gradient 生成重复的彩色条带 */
+    repeating-linear-gradient(
+      0deg,
+      var(--gold-1) calc(5% * 1),
+      var(--gold-2) calc(5% * 2),
+      var(--gold-3) calc(5% * 3),
+      var(--gold-4) calc(5% * 4),
+      var(--gold-5) calc(5% * 5),
+      var(--gold-6) calc(5% * 6),
+      var(--gold-1) calc(5% * 7)
+    ),
+    /* 2. 斜向的金属拉丝纹理 */
+    repeating-linear-gradient(
+      var(--angle),
+      #0e152e 0%,
+      hsl(50, 10%, 60%) 3.8%,
+      hsl(45, 29%, 66%) 4.5%,
+      hsl(40, 10%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
+    ),
+    /* 3. 一个暗角效果，让中心更亮 */
+    radial-gradient(
+      farthest-corner circle at var(--pointer-x) var(--pointer-y),
+      hsla(0, 0%, 0%, 0.1) 12%,
+      hsla(0, 0%, 0%, 0.15) 20%,
+      hsla(0, 0%, 0%, 0.25) 120%
+    );
+  /* 再次使用混合模式，让这几个背景互相作用 */
+  background-blend-mode: color, hard-light;
+}
+
+/* 镜面高光效果层 (Glare) */
+.gpc-glare {
+  transform: translate3d(0, 0, 1.1px); /* 放在比 shine 更靠前一点的位置 */
+  z-index: 4; /* 在最顶层 */
+  /* 一个简单的径向渐变，模拟一个圆形高光 */
+  background-image: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsla(50, 100%, 90%, 0.8) 10%,
+    hsla(48, 100%, 70%, 0) 80%
+  );
+  /* overlay 混合模式，模拟强光照射的效果 */
+  mix-blend-mode: overlay;
+  filter: brightness(1.2) contrast(1.2);
+}
+
+/* 内容层 (头像、文字) */
+.gpc-content {
+  z-index: 5; /* 比所有特效层都高，保证内容可见 */
+  position: relative;
+  /* 视差效果：让内容层根据光标位置进行轻微的、反向的移动，增加立体感 */
+  /* !important 用来确保这个 transform 覆盖掉 * 通配符选择器的 transform */
+  transform: translate3d(
+    calc(var(--pointer-from-left) * -4px + 2px),
+    calc(var(--pointer-from-top) * -4px + 2px),
+    0.1px
+  ) !important;
+  /* luminosity 混合模式，让文字只取下层颜色的亮度，而保持自己的颜色，看起来更和谐 */
+  mix-blend-mode: luminosity;
+  /* 使用 flex 布局来安排内部元素 */
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  justify-content: space-between; /* 上下两端对齐 */
+  padding: 2cqmin; /* 使用容器查询单位设置内边距 */
+}
+
+/* 头像区域 */
+.gpc-avatar {
+  width: 100%;
+  padding-top: 5cqmin; /* 距离顶部留出一些空间 */
+}
+
+.gpc-avatar .avatar-img {
+  border-radius: 50%; /* 圆形 */
+  border: 2px solid rgba(255, 215, 0, 0.5); /* 金色半透明边框 */
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); /* 金色外发光 */
+  width: 15cqw; /* 宽度为容器宽度的 15% */
+  height: 15cqw; /* 高度同理，保持为正方形 */
+  object-fit: cover; /* 确保图片不变形地填满容器 */
+  margin: 0 auto; /* 水平居中 */
+}
+
+/* 用户信息区域 (名字和金额) */
+.gpc-details {
+  margin-top: auto; /* 自动推到 flex 容器的底部 */
+  padding-bottom: 2cqmin;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* 文字阴影，增加可读性 */
+}
+
+.gpc-name {
+  font-weight: bold;
+  font-size: 2.5cqmin; /* 随容器缩放的字号 */
+  /* 金色渐变文字效果 */
+  background: linear-gradient(120deg, #FFFFFF, #FFD700);
+  -webkit-background-clip: text; /* 将背景裁剪为文字的形状 */
+  background-clip: text; /* 兼容性标准属性 */
+  -webkit-text-fill-color: transparent; /* 将文字填充色设为透明，从而显示背景 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 文字过长时显示省略号 */
+  white-space: nowrap;
+}
+
+.gpc-value {
+  font-weight: bold;
+  font-size: 3cqmin;
+  color: #FFF;
+  margin-top: 0.5cqmin;
+}

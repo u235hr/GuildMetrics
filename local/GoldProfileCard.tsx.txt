@@ -1,0 +1,76 @@
+// app/components/GoldProfileCard.tsx
+'use client';
+import React, { useEffect, useRef } from 'react';
+import './GoldProfileCard.css';
+
+interface GoldProfileCardProps {
+  item: {
+    name: string;
+    value: string;
+    avatar: string;
+  };
+}
+
+export default function GoldProfileCard({ item }: GoldProfileCardProps) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // 🌀 3D 自动摆动动画（代替 hover）
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const card = cardRef.current;
+    if (!wrap || !card) return;
+
+    let rafId: number;
+    const duration = 4000; // 4秒完成一个完整摆动周期
+    const amplitude = 5;   // 摆动幅度，5度（轻微摆动）
+
+    const loop = (timestamp: number) => {
+      // 计算当前进度 (0 到 1)
+      const progress = (timestamp % duration) / duration;
+      // 使用正弦函数计算当前旋转角度，实现平滑来回摆动
+      const angle = Math.sin(progress * Math.PI * 2) * amplitude;
+
+      // 将计算好的角度应用到 CSS 变量
+      wrap.style.setProperty('--rotate-x', `${angle}deg`);
+      wrap.style.setProperty('--rotate-y', `${angle * 0.5}deg`); // Y轴摆动幅度小一点
+
+      rafId = requestAnimationFrame(loop);
+    };
+
+    rafId = requestAnimationFrame(loop);
+
+    // 组件卸载时清理动画
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, []); // 空数组依赖，只在组件挂载时执行一次
+
+  return (
+    // 👇 根容器：必须是 container，启用容器查询
+    <div ref={wrapRef} className="medal-card container w-full h-full gold-profile-card-wrapper">
+      {/* 👇 卡片本体 */}
+      <section ref={cardRef} className="gold-profile-card">
+        <div className="gold-profile-inside">
+          {/* 头像 */}
+          <div className="gold-profile-avatar">
+            <img
+              src={item.avatar}
+              alt={`${item.name} avatar`}
+              className="avatar"
+              loading="lazy"
+            />
+          </div>
+
+          {/* 用户信息 */}
+          <div className="gold-profile-details">
+            <h3 className="gold-profile-name">{item.name}</h3>
+            <p className="gold-profile-value">￥{item.value}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
