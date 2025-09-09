@@ -4,11 +4,9 @@ import Header from '@/components/Header';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">
-      <body className="h-screen w-screen flex flex-col bg-[#0D0D0D] text-white overflow-hidden">
-        <div className="flex-shrink-0 h-[10cqh]">
-          <Header />
-        </div>
-        <main className="flex-1 grid grid-rows-[35cqh_55cqh] gap-3 p-1">
+      <body className="h-screen w-screen grid grid-rows-[10fr_90fr] bg-[#0D0D0D] text-white overflow-hidden">
+        <Header />
+        <main className="min-h-0">
           {children}
         </main>
       </body>

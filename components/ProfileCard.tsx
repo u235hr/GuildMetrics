@@ -1,10 +1,7 @@
-// app/components/GoldProfileCard.tsx
-'use client';
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import './GoldProfileCard.css';
+import './ProfileCard.css';
 
-// 完全复制原始模板的Props接口
-interface GoldProfileCardProps {
+interface ProfileCardProps {
   avatarUrl: string;
   iconUrl?: string;
   grainUrl?: string;
@@ -25,42 +22,29 @@ interface GoldProfileCardProps {
   onContactClick?: () => void;
 }
 
-// 完全复制原始模板的默认值
-
-// 默认背景渐变
-// 代码实现原理：
-// 1. 使用radial-gradient和conic-gradient创建一个复杂的渐变背景
-// 2. 使用radial-gradient创建一个内层渐变，用于模拟光晕效果
-// 3. 使用radial-gradient创建一个外层渐变，用于模拟光晕效果
-// 4. 使用conic-gradient创建一个内层渐变，用于模拟光晕效果
-// 5. 使用conic-gradient创建一个外层渐变，用于模拟光晕效果
-// 6. 使用radial-gradient创建一个内层渐变，用于模拟光晕效果
 const DEFAULT_BEHIND_GRADIENT =
   'radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y),hsla(266,100%,90%,var(--card-opacity)) 4%,hsla(266,50%,80%,calc(var(--card-opacity)*0.75)) 10%,hsla(266,25%,70%,calc(var(--card-opacity)*0.5)) 50%,hsla(266,0%,60%,0) 100%),radial-gradient(35% 52% at 55% 20%,#00ffaac4 0%,#073aff00 100%),radial-gradient(100% 100% at 50% 50%,#00c1ffff 1%,#073aff00 76%),conic-gradient(from 124deg at 50% 50%,#c137ffff 0%,#07c6ffff 40%,#07c6ffff 60%,#c137ffff 100%)';
 
-// 默认内层渐变
-// 代码实现原理：
-//使用linear-gradient创建一个线性渐变，用于模拟光晕效果
 const DEFAULT_INNER_GRADIENT = 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)';
 
-// 动画配置常量
 const ANIMATION_CONFIG = {
-  SMOOTH_DURATION: 600,//平滑动画持续时间
-  INITIAL_DURATION: 1500,//初始动画持续时间
-  INITIAL_X_OFFSET: 70,//初始X偏移量
-  INITIAL_Y_OFFSET: 60,//初始Y偏移量
-  DEVICE_BETA_OFFSET: 20//设备偏移量
+  SMOOTH_DURATION: 600,
+  INITIAL_DURATION: 1500,
+  INITIAL_X_OFFSET: 70,
+  INITIAL_Y_OFFSET: 60,
+  DEVICE_BETA_OFFSET: 20
 } as const;
 
-// 工具函数
-// 一个辅助函数，确保一个值被限制在最小值和最大值之间
 const clamp = (value: number, min = 0, max = 100): number => Math.min(Math.max(value, min), max);
+
 const round = (value: number, precision = 3): number => parseFloat(value.toFixed(precision));
+
 const adjust = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number =>
   round(toMin + ((toMax - toMin) * (value - fromMin)) / (fromMax - fromMin));
+
 const easeInOutCubic = (x: number): number => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-const ProfileCardComponent: React.FC<GoldProfileCardProps> = ({
+const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   avatarUrl = '<Placeholder for avatar URL>',
   iconUrl = '<Placeholder for icon URL>',
   grainUrl = '<Placeholder for grain URL>',
@@ -294,7 +278,7 @@ const ProfileCardComponent: React.FC<GoldProfileCardProps> = ({
   }, [onContactClick]);
 
   return (
-    <div ref={wrapRef} className={`pc-card-wrapper h-full ${className}`.trim()} style={cardStyle}>
+    <div ref={wrapRef} className={`pc-card-wrapper ${className}`.trim()} style={cardStyle}>
       <section ref={cardRef} className="pc-card">
         <div className="pc-inside">
           <div className="pc-shine" />

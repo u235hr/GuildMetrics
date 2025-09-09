@@ -1,5 +1,4 @@
 ﻿﻿'use client';
-import * as cfg from '@/constants/goldCardConfig';
 import GoldProfileCard from './GoldProfileCard';
 import MedalCard from './MedalCard';
 
@@ -18,17 +17,9 @@ export default function Top3Container({ data }: Top3ContainerProps) {
   // const cardAspectRatio = cfg.CARD_WIDTH / cfg.CARD_HEIGHT;
   
   return (
-    <div className='relative h-full w-full'>
+    <div className='relative h-full w-full flex justify-center items-end pb-[5%]'>
       {/* 金卡 - 居中 */}
-      <div
-        className='absolute rounded-lg shadow-lg'
-        style={{
-          height: `${cfg.CARD_HEIGHT}cqh`,
-          bottom: `${cfg.CARD_BOTTOM_OFFSET}cqh`,
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}
-      >
+      <div className='h-[80%] '>
         <GoldProfileCard 
           avatarUrl={data.gold.avatar}
           name={data.gold.name}

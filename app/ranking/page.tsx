@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { getRankingData, getTotalCoins, getTotalCount, RankingData } from '@/utils/dataLoader';
+import { getRankingData, RankingData } from '@/utils/dataLoader';
 import Top3Container from '@/components/Top3Container';
 
 export default function RankingPage() {
@@ -51,6 +51,16 @@ export default function RankingPage() {
   };
 
   return (
+    <div className="h-full w-full grid grid-rows-[35fr_55fr]">
+      {/* 35% for Top3Container */}
+      <div className="min-h-0 @container bg-white ">
         <Top3Container data={top3Data} />
+      </div>
+
+      {/* 55% for RestRankingTable (Placeholder) */}
+      <div className="min-h-0 bg-black/20 m-2 rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">RestRankingTable Placeholder (55%)</p>
+      </div>
+    </div>
   );
 }
