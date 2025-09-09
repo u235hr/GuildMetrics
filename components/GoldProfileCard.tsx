@@ -1,140 +1,359 @@
 // app/components/GoldProfileCard.tsx
 'use client';
-import React, { useEffect, useRef } from 'react';
-import './goldprofilecard.css';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import './GoldProfileCard.css';
 
-// 定义这个组件接收的数据类型
+// 完全复制原始模板的Props接口
 interface GoldProfileCardProps {
-  item: {
-    name: string;    // 名字
-    value: string;   // 金额
-    avatar: string;  // 头像图片URL
-  };
+  avatarUrl: string;
+  iconUrl?: string;
+  grainUrl?: string;
+  behindGradient?: string;
+  innerGradient?: string;
+  showBehindGradient?: boolean;
+  className?: string;
+  enableTilt?: boolean;
+  enableMobileTilt?: boolean;
+  mobileTiltSensitivity?: number;
+  miniAvatarUrl?: string;
+  name?: string;
+  title?: string;
+  handle?: string;
+  status?: string;
+  contactText?: string;
+  showUserInfo?: boolean;
+  onContactClick?: () => void;
 }
 
+// 完全复制原始模板的默认值
+
+// 默认背景渐变
+// 代码实现原理：
+// 1. 使用radial-gradient和conic-gradient创建一个复杂的渐变背景
+// 2. 使用radial-gradient创建一个内层渐变，用于模拟光晕效果
+// 3. 使用radial-gradient创建一个外层渐变，用于模拟光晕效果
+// 4. 使用conic-gradient创建一个内层渐变，用于模拟光晕效果
+// 5. 使用conic-gradient创建一个外层渐变，用于模拟光晕效果
+// 6. 使用radial-gradient创建一个内层渐变，用于模拟光晕效果
+const DEFAULT_BEHIND_GRADIENT =
+  'radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y),hsla(266,100%,90%,var(--card-opacity)) 4%,hsla(266,50%,80%,calc(var(--card-opacity)*0.75)) 10%,hsla(266,25%,70%,calc(var(--card-opacity)*0.5)) 50%,hsla(266,0%,60%,0) 100%),radial-gradient(35% 52% at 55% 20%,#00ffaac4 0%,#073aff00 100%),radial-gradient(100% 100% at 50% 50%,#00c1ffff 1%,#073aff00 76%),conic-gradient(from 124deg at 50% 50%,#c137ffff 0%,#07c6ffff 40%,#07c6ffff 60%,#c137ffff 100%)';
+
+// 默认内层渐变
+// 代码实现原理：
+//使用linear-gradient创建一个线性渐变，用于模拟光晕效果
+const DEFAULT_INNER_GRADIENT = 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)';
+
+// 动画配置常量
+const ANIMATION_CONFIG = {
+  SMOOTH_DURATION: 600,//平滑动画持续时间
+  INITIAL_DURATION: 1500,//初始动画持续时间
+  INITIAL_X_OFFSET: 70,//初始X偏移量
+  INITIAL_Y_OFFSET: 60,//初始Y偏移量
+  DEVICE_BETA_OFFSET: 20//设备偏移量
+} as const;
+
+// 工具函数
 // 一个辅助函数，确保一个值被限制在最小值和最大值之间
-// 比如 clamp(150, 0, 100) 会返回 100
 const clamp = (value: number, min = 0, max = 100): number => Math.min(Math.max(value, min), max);
+const round = (value: number, precision = 3): number => parseFloat(value.toFixed(precision));
+const adjust = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number =>
+  round(toMin + ((toMax - toMin) * (value - fromMin)) / (fromMax - fromMin));
+const easeInOutCubic = (x: number): number => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-// GoldProfileCard 组件本体
-export default function GoldProfileCard({ item }: GoldProfileCardProps) {
-  // useRef 用来获取 DOM 元素的引用，就像给元素一个可以直接访问的“把手”
-  // 我们需要用它来直接操作最外层容器的 style 属性
+const ProfileCardComponent: React.FC<GoldProfileCardProps> = ({
+  avatarUrl = '<Placeholder for avatar URL>',
+  iconUrl = '<Placeholder for icon URL>',
+  grainUrl = '<Placeholder for grain URL>',
+  behindGradient,
+  innerGradient,
+  showBehindGradient = true,
+  className = '',
+  enableTilt = true,
+  enableMobileTilt = false,
+  mobileTiltSensitivity = 5,
+  miniAvatarUrl,
+  name = 'Javi A. Torres',
+  title = 'Software Engineer',
+  handle = 'javicodes',
+  status = 'Online',
+  contactText = 'Contact',
+  showUserInfo = true,
+  onContactClick
+}) => {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  // useEffect 是 React 的一个核心功能，它会在组件“挂载”（即显示在屏幕上）后执行一些“副作用”代码
-  // 这里的“副作用”就是指我们的动画，因为它需要直接操作 DOM
-  useEffect(() => {
-    // 从 ref 中获取真实的 DOM 元素
-    const wrap = wrapRef.current;
-    // 如果元素还没准备好，就直接退出，防止报错
-    if (!wrap) return;
+  const animationHandlers = useMemo(() => {
+    if (!enableTilt) return null;
 
-    let rafId: number; // 用来存放 requestAnimationFrame 的 ID，方便之后取消动画
-    const duration = 6000; // 动画一个完整循环的持续时间（毫秒），这里是 6 秒
-    const swingAmplitude = 6;   // 卡片摇摆的最大幅度（单位是“度”）
+    let rafId: number | null = null;
 
-    // loop 函数是动画的核心，它会在每一帧被调用
-    const loop = (timestamp: number) => {
-      // timestamp 是 requestAnimationFrame 传过来的时间戳，代表当前时间
+    const updateCardTransform = (offsetX: number, offsetY: number, card: HTMLElement, wrap: HTMLElement) => {
+      const width = card.clientWidth;
+      const height = card.clientHeight;
 
-      // 1. 计算动画进度
-      // (timestamp % duration) 得到当前在 6 秒循环中的位置
-      // 再除以 duration，得到一个从 0 到 1 的进度值
-      const progress = (timestamp % duration) / duration;
-      const angleProgress = progress * Math.PI * 2; // 将 0-1 的进度转换成 0-2π 的弧度，用于三角函数
+      const percentX = clamp((100 / width) * offsetX);
+      const percentY = clamp((100 / height) * offsetY);
 
-      // 2. 计算卡片摇摆角度
-      // 使用 sin 和 cos 函数，可以根据弧度得到一个在 -1 到 1 之间平滑变化的值
-      // 乘以我们设定的幅度，就得到了卡片在 X 和 Y 轴上的摇摆角度
-      const swingX = Math.sin(angleProgress) * swingAmplitude;
-      const swingY = Math.cos(angleProgress) * swingAmplitude * 0.6; // Y轴的摆动幅度设小一点，看起来更自然
+      const centerX = percentX - 50;
+      const centerY = percentY - 50;
 
-      // 3. 模拟光标移动来驱动光影效果
-      // 卡片上的光泽、高光效果是靠 CSS 变量 --pointer-x 和 --pointer-y 来定位的
-      // 这里我们同样用 sin 和 cos 让这个“虚拟光标”在卡片上平滑地画一个椭圆轨迹
-      const pointerX = 50 + Math.cos(angleProgress) * 35; // X 轴在 15% 到 85% 之间移动
-      const pointerY = 50 + Math.sin(angleProgress) * 25; // Y 轴在 25% 到 75% 之间移动
-
-      // 4. 计算“虚拟光标”距离中心的距离，用于控制某些效果的强度
-      // Math.hypot 计算直角三角形的斜边长，这里就是点 (pointerX, pointerY) 到中心 (50, 50) 的距离
-      // 再除以 50 归一化到 0-1 之间
-      const pointerFromCenter = clamp(Math.hypot(pointerY - 50, pointerX - 50) / 50, 0, 1);
-
-      // 5. 将所有计算好的值，一次性打包成一个对象
-      const properties: Record<string, string | number> = {
-        '--rotate-x': `${swingY}deg`, // 卡片沿 X 轴的旋转角度
-        '--rotate-y': `${swingX}deg`, // 卡片沿 Y 轴的旋转角度
-        '--pointer-x': `${pointerX}%`, // 虚拟光标的 X 位置
-        '--pointer-y': `${pointerY}%`, // 虚拟光标的 Y 位置
-        '--pointer-from-center': pointerFromCenter, // 光标距中心的距离
-        '--pointer-from-top': pointerY / 100,      // 光标距顶部的百分比
-        '--pointer-from-left': pointerX / 100,    // 光标距左侧的百分比
-        '--background-x': `${50 + Math.cos(angleProgress) * 15}%`, // 背景定位的 X
-        '--background-y': `${50 + Math.sin(angleProgress) * 15}%`, // 背景定位的 Y
+      const properties = {
+        '--pointer-x': `${percentX}%`,
+        '--pointer-y': `${percentY}%`,
+        '--background-x': `${adjust(percentX, 0, 100, 35, 65)}%`,
+        '--background-y': `${adjust(percentY, 0, 100, 35, 65)}%`,
+        '--pointer-from-center': `${clamp(Math.hypot(percentY - 50, percentX - 50) / 50, 0, 1)}`,
+        '--pointer-from-top': `${percentY / 100}`,
+        '--pointer-from-left': `${percentX / 100}`,
+        '--rotate-x': `${round(-(centerX / 5))}deg`,
+        '--rotate-y': `${round(centerY / 4)}deg`
       };
 
-      // 6. 遍历这个对象，把所有 CSS 变量设置到 wrapper 元素上
       Object.entries(properties).forEach(([property, value]) => {
-        wrap.style.setProperty(property, value.toString());
+        wrap.style.setProperty(property, value);
       });
-
-      // 7. 请求下一帧动画
-      // 这会告诉浏览器：“嘿，下次重绘屏幕前，请再调用一次 loop 函数”
-      // 这样就形成了一个平滑的、对性能友好的动画循环
-      rafId = requestAnimationFrame(loop);
     };
 
-    // 启动动画循环
-    rafId = requestAnimationFrame(loop);
+    const createSmoothAnimation = (
+      duration: number,
+      startX: number,
+      startY: number,
+      card: HTMLElement,
+      wrap: HTMLElement
+    ) => {
+      const startTime = performance.now();
+      const targetX = wrap.clientWidth / 2;
+      const targetY = wrap.clientHeight / 2;
 
-    // 这是 useEffect 的“清理函数”
-    // 它会在组件“卸载”（即从屏幕上消失）时被调用
-    return () => {
-      // 如果动画还在运行，就取消它，防止组件消失后动画还在后台空跑，造成内存泄漏
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+      const animationLoop = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = clamp(elapsed / duration);
+        const easedProgress = easeInOutCubic(progress);
+
+        const currentX = adjust(easedProgress, 0, 1, startX, targetX);
+        const currentY = adjust(easedProgress, 0, 1, startY, targetY);
+
+        updateCardTransform(currentX, currentY, card, wrap);
+
+        if (progress < 1) {
+          rafId = requestAnimationFrame(animationLoop);
+        }
+      };
+
+      rafId = requestAnimationFrame(animationLoop);
+    };
+
+    return {
+      updateCardTransform,
+      createSmoothAnimation,
+      cancelAnimation: () => {
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
       }
     };
-  }, []); // 这里的空数组 [] 告诉 React：这个 useEffect 只在组件第一次挂载时执行一次，之后就不要再重复执行了
+  }, [enableTilt]);
 
-  // return 部分定义了组件的 HTML 结构 (使用 JSX 语法)
+  const handlePointerMove = useCallback(
+    (event: PointerEvent) => {
+      const card = cardRef.current;
+      const wrap = wrapRef.current;
+
+      if (!card || !wrap || !animationHandlers) return;
+
+      const rect = card.getBoundingClientRect();
+      animationHandlers.updateCardTransform(event.clientX - rect.left, event.clientY - rect.top, card, wrap);
+    },
+    [animationHandlers]
+  );
+
+  const handlePointerEnter = useCallback(() => {
+    const card = cardRef.current;
+    const wrap = wrapRef.current;
+
+    if (!card || !wrap || !animationHandlers) return;
+
+    animationHandlers.cancelAnimation();
+    wrap.classList.add('active');
+    card.classList.add('active');
+  }, [animationHandlers]);
+
+  const handlePointerLeave = useCallback(
+    (event: PointerEvent) => {
+      const card = cardRef.current;
+      const wrap = wrapRef.current;
+
+      if (!card || !wrap || !animationHandlers) return;
+
+      animationHandlers.createSmoothAnimation(
+        ANIMATION_CONFIG.SMOOTH_DURATION,
+        event.offsetX,
+        event.offsetY,
+        card,
+        wrap
+      );
+      wrap.classList.remove('active');
+      card.classList.remove('active');
+    },
+    [animationHandlers]
+  );
+
+  const handleDeviceOrientation = useCallback(
+    (event: DeviceOrientationEvent) => {
+      const card = cardRef.current;
+      const wrap = wrapRef.current;
+
+      if (!card || !wrap || !animationHandlers) return;
+
+      const { beta, gamma } = event;
+      if (!beta || !gamma) return;
+
+      animationHandlers.updateCardTransform(
+        card.clientHeight / 2 + gamma * mobileTiltSensitivity,
+        card.clientWidth / 2 + (beta - ANIMATION_CONFIG.DEVICE_BETA_OFFSET) * mobileTiltSensitivity,
+        card,
+        wrap
+      );
+    },
+    [animationHandlers, mobileTiltSensitivity]
+  );
+
+  useEffect(() => {
+    if (!enableTilt || !animationHandlers) return;
+
+    const card = cardRef.current;
+    const wrap = wrapRef.current;
+
+    if (!card || !wrap) return;
+
+    const pointerMoveHandler = handlePointerMove as EventListener;
+    const pointerEnterHandler = handlePointerEnter as EventListener;
+    const pointerLeaveHandler = handlePointerLeave as EventListener;
+    const deviceOrientationHandler = handleDeviceOrientation as EventListener;
+
+    const handleClick = () => {
+      if (!enableMobileTilt || location.protocol !== 'https:') return;
+      if (typeof (window.DeviceMotionEvent as any).requestPermission === 'function') {
+        (window.DeviceMotionEvent as any)
+          .requestPermission()
+          .then((state: string) => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientation', deviceOrientationHandler);
+            }
+          })
+          .catch((err: any) => console.error(err));
+      } else {
+        window.addEventListener('deviceorientation', deviceOrientationHandler);
+      }
+    };
+
+    card.addEventListener('pointerenter', pointerEnterHandler);
+    card.addEventListener('pointermove', pointerMoveHandler);
+    card.addEventListener('pointerleave', pointerLeaveHandler);
+    card.addEventListener('click', handleClick);
+
+    const initialX = wrap.clientWidth - ANIMATION_CONFIG.INITIAL_X_OFFSET;
+    const initialY = ANIMATION_CONFIG.INITIAL_Y_OFFSET;
+
+    animationHandlers.updateCardTransform(initialX, initialY, card, wrap);
+    animationHandlers.createSmoothAnimation(ANIMATION_CONFIG.INITIAL_DURATION, initialX, initialY, card, wrap);
+
+    return () => {
+      card.removeEventListener('pointerenter', pointerEnterHandler);
+      card.removeEventListener('pointermove', pointerMoveHandler);
+      card.removeEventListener('pointerleave', pointerLeaveHandler);
+      card.removeEventListener('click', handleClick);
+      window.removeEventListener('deviceorientation', deviceOrientationHandler);
+      animationHandlers.cancelAnimation();
+    };
+  }, [
+    enableTilt,
+    enableMobileTilt,
+    animationHandlers,
+    handlePointerMove,
+    handlePointerEnter,
+    handlePointerLeave,
+    handleDeviceOrientation
+  ]);
+
+  const cardStyle = useMemo(
+    () =>
+      ({
+        '--icon': iconUrl ? `url(${iconUrl})` : 'none',
+        '--grain': grainUrl ? `url(${grainUrl})` : 'none',
+        '--behind-gradient': showBehindGradient ? (behindGradient ?? DEFAULT_BEHIND_GRADIENT) : 'none',
+        '--inner-gradient': innerGradient ?? DEFAULT_INNER_GRADIENT
+      }) as React.CSSProperties,
+    [iconUrl, grainUrl, showBehindGradient, behindGradient, innerGradient]
+  );
+
+  const handleContactClick = useCallback(() => {
+    onContactClick?.();
+  }, [onContactClick]);
+
   return (
-    // 👇 根容器：
-    // - ref={wrapRef}：把这个 div 的“把手”交给我们的 wrapRef
-    // - className: "gpc-card-wrapper..."：应用我们 CSS 文件里定义的样式
-    // - "container" 是 tailwind 的一个特殊类，用来启用容器查询
-    <div ref={wrapRef} className="gpc-card-wrapper container w-full h-full">
-      {/* 👇 卡片本体 */}
-      <section className="gpc-card">
-        {/* 👇 卡片内部容器，主要是为了做一层背景和边框 */}
-        <div className="gpc-inside">
-          {/* ✨ 特效层：这是实现酷炫效果的关键！ */}
-          {/* gpc-shine 负责实现那种五彩斑斓的全息光泽 */}
-          <div className="gpc-shine" />
-          {/* gpc-glare 负责实现镜面高光反射的效果 */}
-          <div className="gpc-glare" />
-
-          {/* 👇 内容层：所有文字、头像都在这里 */}
-          <div className="gpc-content">
-            {/* 头像 */}
-            <div className="gpc-avatar">
-              <img
-                src={item.avatar}
-                alt={`${item.name} avatar`}
-                className="avatar-img"
-                loading="lazy" // 图片懒加载，优化性能
-              />
-            </div>
-
-            {/* 用户信息 */}
-            <div className="gpc-details">
-              <h3 className="gpc-name">{item.name}</h3>
-              <p className="gpc-value">￥{item.value}</p>
+    <div ref={wrapRef} className={`pc-card-wrapper ${className}`.trim()} style={cardStyle}>
+      <section ref={cardRef} className="pc-card">
+        <div className="pc-inside">
+          <div className="pc-shine" />
+          <div className="pc-glare" />
+          <div className="pc-content pc-avatar-content">
+            <img
+              className="avatar"
+              src={avatarUrl}
+              alt={`${name || 'User'} avatar`}
+              loading="lazy"
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+            {showUserInfo && (
+              <div className="pc-user-info">
+                <div className="pc-user-details">
+                  <div className="pc-mini-avatar">
+                    <img
+                      src={miniAvatarUrl || avatarUrl}
+                      alt={`${name || 'User'} mini avatar`}
+                      loading="lazy"
+                      onError={e => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.opacity = '0.5';
+                        target.src = avatarUrl;
+                      }}
+                    />
+                  </div>
+                  <div className="pc-user-text">
+                    <div className="pc-handle">@{handle}</div>
+                    <div className="pc-status">{status}</div>
+                  </div>
+                </div>
+                <button
+                  className="pc-contact-btn"
+                  onClick={handleContactClick}
+                  style={{ pointerEvents: 'auto' }}
+                  type="button"
+                  aria-label={`Contact ${name || 'user'}`}
+                >
+                  {contactText}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="pc-content">
+            <div className="pc-details">
+              <h3>{name}</h3>
+              <p>{title}</p>
             </div>
           </div>
         </div>
       </section>
     </div>
   );
-}
+};
+
+const ProfileCard = React.memo(ProfileCardComponent);
+
+export default ProfileCard;

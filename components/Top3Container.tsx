@@ -15,7 +15,7 @@ interface Top3ContainerProps {
 
 export default function Top3Container({ data }: Top3ContainerProps) {
   // 计算卡片宽高比
-  const cardAspectRatio = cfg.CARD_WIDTH / cfg.CARD_HEIGHT;
+  // const cardAspectRatio = cfg.CARD_WIDTH / cfg.CARD_HEIGHT;
   
   return (
     <div className='relative h-full w-full'>
@@ -24,24 +24,27 @@ export default function Top3Container({ data }: Top3ContainerProps) {
         className='absolute rounded-lg shadow-lg'
         style={{
           height: `${cfg.CARD_HEIGHT}cqh`,
-          width: `${cfg.CARD_WIDTH}cqw`,
           bottom: `${cfg.CARD_BOTTOM_OFFSET}cqh`,
           left: '50%',
           transform: 'translateX(-50%)',
-          aspectRatio: cardAspectRatio,
         }}
       >
         <GoldProfileCard 
-          item={{
-            avatar: data.gold.avatar,
-            name: data.gold.name,
-            value: data.gold.value
-          }}
+          avatarUrl={data.gold.avatar}
+          name={data.gold.name}
+          title={`${data.gold.value}`}
+          handle="user"
+          status="Online"
+          contactText="Contact"
+          showUserInfo={true}
+          enableTilt={true}
+          enableMobileTilt={false}
+          onContactClick={() => console.log('Contact clicked')}
         />
       </div>
 
       {/* 银卡 - 左侧 */}
-      <div
+      {/* <div
         className='absolute bg-gradient-to-br from-gray-300 to-gray-500 rounded-lg shadow-lg'
         style={{
           height: `${cfg.CARD_HEIGHT * cfg.SCALE_SILVER}cqh`,
@@ -53,10 +56,10 @@ export default function Top3Container({ data }: Top3ContainerProps) {
         }}
       >
         <MedalCard item={data.silver} type='silver' />
-      </div>
+      </div> */}
 
       {/* 铜卡 - 右侧 */}
-      <div
+      {/* <div
         className='absolute bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg shadow-lg'
         style={{
           height: `${cfg.CARD_HEIGHT * cfg.SCALE_BRONZE}cqh`,
@@ -67,7 +70,7 @@ export default function Top3Container({ data }: Top3ContainerProps) {
         }}
       >
         <MedalCard item={data.bronze} type='bronze' />
-      </div>
+      </div> */}
     </div>
   );
 }
