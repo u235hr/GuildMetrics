@@ -36,7 +36,7 @@ export default function RankingPage() {
     gold: {
       name: rankingData[0]?.name || '暂无数据',
       value: rankingData[0]?.coins.toLocaleString() || '0',
-      avatar: '/avatars/avatar1.svg'
+      avatar: '/avatars/1inc.png'
     },
     silver: {
       name: rankingData[1]?.name || '暂无数据',
