@@ -1,0 +1,24 @@
+✅ 1. 底板提亮：从 12% → 20% 亮度
+位置：.pc-inside { ... } 里那行 background-color
+原来
+css
+Copy
+background-color: hsl(35, 20%, 12%);
+改成
+css
+Copy
+background-color: hsl(35, 18%, 20%);
+亮度 12% → 20%，咖啡味瞬间淡一半；
+色相/饱和度不动，仍是暖底，不会发灰。
+✅ 2. 金线加亮：+10% 亮度、+10% 饱和度
+同一选择器里的 box-shadow 第一行
+原来
+css
+Copy
+box-shadow: inset 0 0 0 1px hsl(42, 60%, 50%),
+改成
+css
+Copy
+box-shadow: inset 0 0 0 1px hsl(42, 70%, 60%),
+饱和度 60→70，亮度 50→60，金线立刻“闪”出来；
+1 px 细线不会喧宾夺主，只是让边缘发光。

@@ -143,10 +143,14 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
 
   const handlePointerMove = useCallback(
     (event: PointerEvent) => {
+      console.log('鼠标移动了！', event.clientX, event.clientY);
       const card = cardRef.current;
       const wrap = wrapRef.current;
 
-      if (!card || !wrap || !animationHandlers) return;
+      if (!card || !wrap || !animationHandlers) {
+        console.log('元素或handlers为null:', { card, wrap, animationHandlers });
+        return;
+      }
 
       const rect = card.getBoundingClientRect();
       animationHandlers.updateCardTransform(event.clientX - rect.left, event.clientY - rect.top, card, wrap);

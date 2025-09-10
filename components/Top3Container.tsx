@@ -17,17 +17,18 @@ export default function Top3Container({ data }: Top3ContainerProps) {
   // const cardAspectRatio = cfg.CARD_WIDTH / cfg.CARD_HEIGHT;
   
   return (
-    <div className='relative h-full w-full flex justify-center items-end pb-[5%]'>
+    <div className='relative h-full w-full flex justify-center items-end pb-[0%]'>
       {/* 金卡 - 居中 */}
-      <div className='h-[80%] '>
+      <div className='h-[100%] '>
         <GoldProfileCard 
           avatarUrl={data.gold.avatar}
+          // iconUrl="/medal-front/clay.png"
           name={data.gold.name}
           title={`${data.gold.value}`}
           handle="user"
           status="Online"
           contactText="Contact"
-          showUserInfo={true}
+          showUserInfo={false}
           enableTilt={true}
           enableMobileTilt={false}
           onContactClick={() => console.log('Contact clicked')}
