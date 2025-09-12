@@ -2,6 +2,7 @@
 'use client';
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import './GoldProfileCard.css';
+import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 // 完全复制原始模板的Props接口
 interface GoldProfileCardProps {
@@ -38,10 +39,6 @@ interface GoldProfileCardProps {
 const DEFAULT_BEHIND_GRADIENT =
   'radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y),hsla(266,100%,90%,var(--card-opacity)) 4%,hsla(266,50%,80%,calc(var(--card-opacity)*0.75)) 10%,hsla(266,25%,70%,calc(var(--card-opacity)*0.5)) 50%,hsla(266,0%,60%,0) 100%),radial-gradient(35% 52% at 55% 20%,#00ffaac4 0%,#073aff00 100%),radial-gradient(100% 100% at 50% 50%,#00c1ffff 1%,#073aff00 76%),conic-gradient(from 124deg at 50% 50%,#c137ffff 0%,#07c6ffff 40%,#07c6ffff 60%,#c137ffff 100%)';
 
-// 默认内层渐变
-// 代码实现原理：
-//使用linear-gradient创建一个线性渐变，用于模拟光晕效果
-const DEFAULT_INNER_GRADIENT = 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)';
 
 // 动画配置常量
 const ANIMATION_CONFIG = {
@@ -82,6 +79,9 @@ const ProfileCardComponent: React.FC<GoldProfileCardProps> = ({
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  // 使用全局性能监控
+  const { updateWiggle } = usePerformanceMonitor();
 
   const animationHandlers = useMemo(() => {
     if (!enableTilt) return null;
@@ -156,135 +156,97 @@ const ProfileCardComponent: React.FC<GoldProfileCardProps> = ({
     };
   }, [enableTilt]);
 
-  const handlePointerMove = useCallback(
-    (event: PointerEvent) => {
-      const card = cardRef.current;
-      const wrap = wrapRef.current;
+  // ========== 3D wiggle动画管理 ==========
+  const wiggleAnimationRef = useRef<number | null>(null);
 
-      if (!card || !wrap || !animationHandlers) return;
-
-      const rect = card.getBoundingClientRect();
-      animationHandlers.updateCardTransform(event.clientX - rect.left, event.clientY - rect.top, card, wrap);
-    },
-    [animationHandlers]
-  );
-
-  const handlePointerEnter = useCallback(() => {
-    const card = cardRef.current;
-    const wrap = wrapRef.current;
-
-    if (!card || !wrap || !animationHandlers) return;
-
-    animationHandlers.cancelAnimation();
-    wrap.classList.add('active');
-    card.classList.add('active');
-  }, [animationHandlers]);
-
-  const handlePointerLeave = useCallback(
-    (event: PointerEvent) => {
-      const card = cardRef.current;
-      const wrap = wrapRef.current;
-
-      if (!card || !wrap || !animationHandlers) return;
-
-      animationHandlers.createSmoothAnimation(
-        ANIMATION_CONFIG.SMOOTH_DURATION,
-        event.offsetX,
-        event.offsetY,
-        card,
-        wrap
-      );
-      wrap.classList.remove('active');
-      card.classList.remove('active');
-    },
-    [animationHandlers]
-  );
-
-  const handleDeviceOrientation = useCallback(
-    (event: DeviceOrientationEvent) => {
-      const card = cardRef.current;
-      const wrap = wrapRef.current;
-
-      if (!card || !wrap || !animationHandlers) return;
-
-      const { beta, gamma } = event;
-      if (!beta || !gamma) return;
-
-      animationHandlers.updateCardTransform(
-        card.clientHeight / 2 + gamma * mobileTiltSensitivity,
-        card.clientWidth / 2 + (beta - ANIMATION_CONFIG.DEVICE_BETA_OFFSET) * mobileTiltSensitivity,
-        card,
-        wrap
-      );
-    },
-    [animationHandlers, mobileTiltSensitivity]
-  );
-
-  useEffect(() => {
-    if (!enableTilt || !animationHandlers) return;
-
+  const startWiggleAnimation = useCallback(() => {
     const card = cardRef.current;
     const wrap = wrapRef.current;
 
     if (!card || !wrap) return;
 
-    const pointerMoveHandler = handlePointerMove as EventListener;
-    const pointerEnterHandler = handlePointerEnter as EventListener;
-    const pointerLeaveHandler = handlePointerLeave as EventListener;
-    const deviceOrientationHandler = handleDeviceOrientation as EventListener;
+    // 停止之前的动画，避免重复启动
+    if (wiggleAnimationRef.current) {
+      cancelAnimationFrame(wiggleAnimationRef.current);
+    }
 
-    const handleClick = () => {
-      if (!enableMobileTilt || location.protocol !== 'https:') return;
-      if (typeof (window.DeviceMotionEvent as any).requestPermission === 'function') {
-        (window.DeviceMotionEvent as any)
-          .requestPermission()
-          .then((state: string) => {
-            if (state === 'granted') {
-              window.addEventListener('deviceorientation', deviceOrientationHandler);
-            }
-          })
-          .catch((err: any) => console.error(err));
-      } else {
-        window.addEventListener('deviceorientation', deviceOrientationHandler);
-      }
+    const animate = () => {
+// ========== 3D wiggle效果 - 使用噪声函数替代随机值 ==========
+const time = Date.now() * 0.001;
+
+// 基于时间的平滑噪声，避免突然变化
+const noiseX = Math.sin(time * 0.7) * 0.8 + Math.sin(time * 1.3) * 0.4;
+const noiseY = Math.cos(time * 0.9) * 0.6 + Math.cos(time * 1.1) * 0.3;
+
+// 计算X轴的wiggle角度，叠加多个正弦波和噪声
+const wiggleX = Math.sin(time) * 3 +  //乘以4作为标准正弦波的幅度,一般修改此参数来调整X轴摆动幅度
+               Math.sin(time * 1.7) * 1.5 + 
+               Math.sin(time * 0.3) * 0.8 + 
+               noiseX;
+
+// 计算Y轴的wiggle角度，叠加多个余弦波和噪声
+const wiggleY = Math.cos(time * 0.8) * 3 +  //乘以3作为标准余弦波的幅度,一般修改此参数来调整Y轴摆动幅度
+               Math.cos(time * 1.3) * 1.2 + 
+               Math.cos(time * 0.5) * 0.6 + 
+               noiseY;
+
+// 更新全局性能监控的wiggle数据
+updateWiggle(wiggleX, wiggleY);
+
+      // 应用3D变换
+      card.style.transform = `perspective(1000px) rotateX(${wiggleX}deg) rotateY(${wiggleY}deg)`;
+
+      // 虚拟鼠标位置计算
+      const rect = card.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const offsetX = centerX - wiggleY * 10;
+      const offsetY = centerY + wiggleX * 10;
+
+      const percentX = (offsetX / rect.width) * 100;
+      const percentY = (offsetY / rect.height) * 100;
+      
+      // 更新CSS变量
+      wrap.style.setProperty('--pointer-x', `${percentX}%`);
+      wrap.style.setProperty('--pointer-y', `${percentY}%`);
+      wrap.style.setProperty('--background-x', `${adjust(percentX, 0, 100, 35, 65)}%`);
+      wrap.style.setProperty('--background-y', `${adjust(percentY, 0, 100, 35, 65)}%`);
+      
+      // 继续下一帧
+      wiggleAnimationRef.current = requestAnimationFrame(animate);
     };
 
-    card.addEventListener('pointerenter', pointerEnterHandler);
-    card.addEventListener('pointermove', pointerMoveHandler);
-    card.addEventListener('pointerleave', pointerLeaveHandler);
-    card.addEventListener('click', handleClick);
+    // 启动动画循环
+    wiggleAnimationRef.current = requestAnimationFrame(animate);
+  }, [updateWiggle]);
 
-    const initialX = wrap.clientWidth - ANIMATION_CONFIG.INITIAL_X_OFFSET;
-    const initialY = ANIMATION_CONFIG.INITIAL_Y_OFFSET;
+  const stopWiggleAnimation = useCallback(() => {
+    if (wiggleAnimationRef.current) {
+      cancelAnimationFrame(wiggleAnimationRef.current);
+      wiggleAnimationRef.current = null;
+    }
+  }, []);
 
-    animationHandlers.updateCardTransform(initialX, initialY, card, wrap);
-    animationHandlers.createSmoothAnimation(ANIMATION_CONFIG.INITIAL_DURATION, initialX, initialY, card, wrap);
-
+  // ========== 简化的useEffect ==========
+  useEffect(() => {
+    console.log('🎮 GoldProfileCard 组件已挂载，启动性能监控');
+    // 启动wiggle动画
+    startWiggleAnimation();
+    
+    // 组件卸载时停止动画
     return () => {
-      card.removeEventListener('pointerenter', pointerEnterHandler);
-      card.removeEventListener('pointermove', pointerMoveHandler);
-      card.removeEventListener('pointerleave', pointerLeaveHandler);
-      card.removeEventListener('click', handleClick);
-      window.removeEventListener('deviceorientation', deviceOrientationHandler);
-      animationHandlers.cancelAnimation();
+      console.log('🎮 GoldProfileCard 组件已卸载，停止性能监控');
+      stopWiggleAnimation();
     };
-  }, [
-    enableTilt,
-    enableMobileTilt,
-    animationHandlers,
-    handlePointerMove,
-    handlePointerEnter,
-    handlePointerLeave,
-    handleDeviceOrientation
-  ]);
+  }, [startWiggleAnimation, stopWiggleAnimation]);
 
   const cardStyle = useMemo(
     () =>
       ({
         '--icon': iconUrl ? `url(${iconUrl})` : 'none',
-        '--grain': grainUrl ? `url(${grainUrl})` : 'none',
         '--behind-gradient': showBehindGradient ? (behindGradient ?? DEFAULT_BEHIND_GRADIENT) : 'none',
-        '--inner-gradient': innerGradient ?? DEFAULT_INNER_GRADIENT
+        '--inner-gradient': innerGradient ?? 'none'
       }) as React.CSSProperties,
     [iconUrl, grainUrl, showBehindGradient, behindGradient, innerGradient]
   );

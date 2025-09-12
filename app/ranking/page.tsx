@@ -53,7 +53,7 @@ export default function RankingPage() {
   return (
     <div className="h-full w-full grid grid-rows-[35fr_55fr]">
       {/* 35% for Top3Container */}
-      <div className="min-h-0 @container bg-white ">
+      <div className="min-h-0 @container">
         <Top3Container data={top3Data} />
       </div>
 

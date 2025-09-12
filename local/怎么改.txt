@@ -1,24 +1,65 @@
-✅ 1. 底板提亮：从 12% → 20% 亮度
-位置：.pc-inside { ... } 里那行 background-color
-原来
-css
-Copy
-background-color: hsl(35, 20%, 12%);
-改成
-css
-Copy
-background-color: hsl(35, 18%, 20%);
-亮度 12% → 20%，咖啡味瞬间淡一半；
-色相/饱和度不动，仍是暖底，不会发灰。
-✅ 2. 金线加亮：+10% 亮度、+10% 饱和度
-同一选择器里的 box-shadow 第一行
-原来
-css
-Copy
-box-shadow: inset 0 0 0 1px hsl(42, 60%, 50%),
-改成
-css
-Copy
-box-shadow: inset 0 0 0 1px hsl(42, 70%, 60%),
-饱和度 60→70，亮度 50→60，金线立刻“闪”出来；
-1 px 细线不会喧宾夺主，只是让边缘发光。
+思路
+	1.	在 .pc-details h3 外层，加一个“凸起区域”的容器（比如 .pc-nameplate）。
+	2.	这个区域本身做成 凸出来的金属条（靠 box-shadow + 内阴影实现）。
+	3.	把 h3 的字体雕刻效果放在这个容器内部，字就像是刻在这块凸起区域上的。
+
+⸻
+
+代码示例
+
+在你的 GoldProfileCard.css 里加一个新的样式：
+/* 凸起铭牌区域 */
+.pc-nameplate {
+  display: inline-block;
+  padding: 0.4em 1.2em;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, 
+    #e6d99c, 
+    #c8a951 40%, 
+    #8d6a1f 100%
+  );
+  box-shadow:
+    inset -2px -2px 4px rgba(255, 255, 255, 0.6), /* 上方亮边 */
+    inset 2px 2px 6px rgba(0, 0, 0, 0.6),         /* 下方暗边 */
+    0 4px 10px rgba(0,0,0,0.6);                  /* 外部投影，让它像突出来 */
+  position: relative;
+  z-index: 6;
+}
+
+/* 铭牌里的名字（雕刻效果） */
+.pc-nameplate h3 {
+  font-family: 'Cinzel', serif; /* 建议用碑刻感字体 */
+  font-weight: 700;
+  margin: 0;
+  font-size: 2.4em;
+  letter-spacing: 1px;
+
+  background-image: linear-gradient(to bottom, 
+    #d4c48a 0%,   /* 亮金 */
+    #a88b3a 50%,  /* 中金 */
+    #705920 100%  /* 暗金 */
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  text-shadow:
+    -1px -1px 1px rgba(0,0,0,0.6),   /* 上暗阴影 */
+    1px 1px 2px rgba(255,255,255,0.6); /* 下亮高光 */
+}
+用法
+
+原来的：
+<div class="pc-details">
+  <h3>USERNAME</h3>
+</div>
+改成：
+<div class="pc-details">
+  <div class="pc-nameplate">
+    <h3>USERNAME</h3>
+  </div>
+</div>
+效果
+	•	.pc-nameplate → 像奖牌上凸出来的一条金属铭牌。
+	•	h3 → 继续保留雕刻字效果，就像刻在铭牌上。
+	•	整体观感：名字更突出，有真实“金牌+铭牌”的感觉。

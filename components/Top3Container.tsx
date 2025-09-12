@@ -1,6 +1,7 @@
 ﻿﻿'use client';
 import GoldProfileCard from './GoldProfileCard';
 import MedalCard from './MedalCard';
+import LightRays from './LightRays';
 
 interface Top3Data {
   gold: { name: string; value: string; avatar: string };
@@ -13,16 +14,38 @@ interface Top3ContainerProps {
 }
 
 export default function Top3Container({ data }: Top3ContainerProps) {
-  // 计算卡片宽高比
-  // const cardAspectRatio = cfg.CARD_WIDTH / cfg.CARD_HEIGHT;
-  
   return (
     <div className='relative h-full w-full flex justify-center items-end pb-[0%]'>
-      {/* 金卡 - 居中 */}
-      <div className='h-[100%] '>
+      {/* 添加 LightRays 光效组件作为背景 - 确保在底层 */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{ 
+          zIndex: 1, // 确保在底层
+          pointerEvents: 'none' // 禁用鼠标事件，避免干扰金卡
+        }}
+      >
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#f2fedc" // 金色主题
+          raysSpeed={0.4} // 更慢更优雅
+          lightSpread={3} // 更大的扩散范围
+          rayLength={1.0} // 更长的光线
+          followMouse={false} // 保持禁用
+          mouseInfluence={0} // 保持禁用
+          noiseAmount={0.02} // 更少的噪点
+          distortion={0.01} // 更少的扭曲
+          pulsating={true} // 保持脉动
+          fadeDistance={1.0} // 更自然的淡出
+          saturation={0.8} // 稍微降低饱和度
+          className="custom-rays"
+        />
+      </div>
+      
+      {/* 金卡 - 居中，确保在光效之上 */}
+      <div className='h-[100%] relative' style={{ zIndex: 10 }}>
         <GoldProfileCard 
           avatarUrl={data.gold.avatar}
-          // iconUrl="/medal-front/clay.png"
+          // iconUrl="/medal-front/color.png" 
           name={data.gold.name}
           title={`${data.gold.value}`}
           handle="user"
@@ -34,35 +57,6 @@ export default function Top3Container({ data }: Top3ContainerProps) {
           onContactClick={() => console.log('Contact clicked')}
         />
       </div>
-
-      {/* 银卡 - 左侧 */}
-      {/* <div
-        className='absolute bg-gradient-to-br from-gray-300 to-gray-500 rounded-lg shadow-lg'
-        style={{
-          height: `${cfg.CARD_HEIGHT * cfg.SCALE_SILVER}cqh`,
-          width: `${cfg.CARD_WIDTH * cfg.SCALE_SILVER}cqw`,
-          bottom: `${cfg.CARD_BOTTOM_OFFSET}cqh`,
-          left: `calc(50% - ${cfg.CARD_WIDTH * cfg.SCALE_SILVER * 0.5 + cfg.CARD_HORIZONTAL_GAP}cqw)`,
-          transform: 'translateX(-100%)',
-          aspectRatio: cardAspectRatio,
-        }}
-      >
-        <MedalCard item={data.silver} type='silver' />
-      </div> */}
-
-      {/* 铜卡 - 右侧 */}
-      {/* <div
-        className='absolute bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg shadow-lg'
-        style={{
-          height: `${cfg.CARD_HEIGHT * cfg.SCALE_BRONZE}cqh`,
-          width: `${cfg.CARD_WIDTH * cfg.SCALE_BRONZE}cqw`,
-          bottom: `${cfg.CARD_BOTTOM_OFFSET}cqh`,
-          left: `calc(50% + ${cfg.CARD_WIDTH * cfg.SCALE_SILVER * 0.5 + cfg.CARD_HORIZONTAL_GAP}cqw)`,
-          aspectRatio: cardAspectRatio,
-        }}
-      >
-        <MedalCard item={data.bronze} type='bronze' />
-      </div> */}
     </div>
   );
 }

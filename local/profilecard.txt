@@ -613,6 +613,26 @@ css
   bottom: 2px;
   opacity: calc(1.75 - var(--pointer-from-center));
 }
+  我调过的：
+.pc-avatar-content .avatar {
+    width: 100%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+    bottom: 40px;
+    opacity: calc(1.75 - var(--pointer-from-center));
+    /* 用 opacity 渐变控制透明度 */
+    mask: linear-gradient(
+      to bottom,
+      rgba(255,255,255,0) 3%,
+      rgba(255,255,255,0.2) 5%,
+      rgba(255,255,255,1) 10%,
+      rgba(255,255,255,1) 90%,
+      rgba(255,255,255,0.2) 95%,
+      rgba(255,255,255,0) 98%,
+      rgba(255,255,255,0) 100%  
+    );
+}
 
 .pc-avatar-content::before {
   content: '';
