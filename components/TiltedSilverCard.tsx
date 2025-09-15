@@ -1,6 +1,7 @@
 import type { SpringOptions } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
+import ElectricBorder from './ElectricBorder';
 
 interface TiltedSilverCardProps {
   imageSrc: React.ComponentProps<'img'>['src'];
@@ -16,7 +17,6 @@ interface TiltedSilverCardProps {
   showTooltip?: boolean;
   overlayContent?: React.ReactNode;
   displayOverlayContent?: boolean;
-  startWiggle?: boolean;
 }
 
 const springValues: SpringOptions = {
@@ -39,7 +39,6 @@ export default function TiltedSilverCard({
   showTooltip = true,
   overlayContent = null,
   displayOverlayContent = false,
-  startWiggle = false
 }: TiltedSilverCardProps) {
   const ref = useRef<HTMLElement>(null);
   const x = useMotionValue(0);
@@ -63,14 +62,11 @@ export default function TiltedSilverCard({
     const offsetX = e.clientX - rect.left - rect.width / 2;
     const offsetY = e.clientY - rect.top - rect.height / 2;
 
-    // 只有在非wiggle状态下才响应鼠标旋转
-    if (!startWiggle) {
-      const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
-      const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude;
+    const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
+    const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude;
 
-      rotateX.set(rotationX);
-      rotateY.set(rotationY);
-    }
+    rotateX.set(rotationX);
+    rotateY.set(rotationY);
 
     x.set(e.clientX - rect.left);
     y.set(e.clientY - rect.top);
@@ -96,47 +92,7 @@ export default function TiltedSilverCard({
   }
 
   // 3D wiggle效果 - 自动轻微摆动，大幅增加摆动幅度便于视觉验证
-  useEffect(() => {
-    console.log('银卡 wiggle useEffect 触发，startWiggle:', startWiggle);
-    
-    if (!startWiggle) {
-      // 停止wiggle时重置旋转
-      console.log('银卡停止wiggle，重置旋转');
-      rotateX.set(0);
-      rotateY.set(0);
-      return;
-    }
-    
-    console.log('银卡开始wiggle动画');
-    let phase = 0;
-    const wiggleInterval = setInterval(() => {
-      phase += 0.05; // 增加相位变化速度
-      
-      if (!ref.current) return;
-      
-      const rect = ref.current.getBoundingClientRect();
-      
-      // 大幅增加摆动幅度便于视觉验证
-      const wiggleX = Math.sin(phase) * 60; // 增加到60px的摆动幅度
-      const wiggleY = Math.cos(phase * 0.8) * 40; // 增加到40px的摆动幅度
-      
-      const offsetX = wiggleX;
-      const offsetY = wiggleY;
-      
-      const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude * 1.2; // 大幅增加摆动强度
-      const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude * 1.2;
-      
-      console.log('银卡设置旋转:', rotationX, rotationY);
-      
-      rotateX.set(rotationX);
-      rotateY.set(rotationY);
-    }, 30); // 减少间隔，增加帧率
-    
-    return () => {
-      console.log('银卡清理wiggle定时器');
-      clearInterval(wiggleInterval);
-    };
-  }, [startWiggle, rotateAmplitude]);
+  // 移除3D wiggle效果
 
   return (
     <figure
@@ -178,21 +134,38 @@ export default function TiltedSilverCard({
           scale
         }}
       >
-        <motion.img
-          src={imageSrc}
-          alt={altText}
-          style={{
+        <ElectricBorder
+          color="#C0C0C0"
+          speed={0.5}
+          chaos={0.2}
+          thickness={3}
+          style={{ 
             position: 'absolute',
             top: 0,
             left: 0,
-            objectFit: 'cover',
-            borderRadius: '15px',
-            willChange: 'transform',
-            transform: 'translateZ(0)',
             width: imageWidth,
-            height: imageHeight
+            height: imageHeight,
+            borderRadius: 15,
+            pointerEvents: 'none',
+            zIndex: 10
           }}
-        />
+        >
+          <motion.img
+            src={imageSrc}
+            alt={altText}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              objectFit: 'cover',
+              borderRadius: '15px',
+              willChange: 'transform',
+              transform: 'translateZ(0)',
+              width: imageWidth,
+              height: imageHeight
+            }}
+          />
+        </ElectricBorder>
 
         {displayOverlayContent && overlayContent && (
           <motion.div 

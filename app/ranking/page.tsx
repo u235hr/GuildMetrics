@@ -51,15 +51,15 @@ export default function RankingPage() {
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full overflow-hidden flex flex-col">
       {/* 35% for Top3Container with container query */}
-      <div className="h-[35%] w-full @container" style={{ overflow: 'visible' }}>
+      <div className="flex-[35] w-full @container" style={{ overflow: 'visible' }}>
         <Top3Container data={top3Data} />
       </div>
 
-      {/* 55% for RestRankingTable (Placeholder) */}
-      <div className="h-[55%] w-full border-2 border-white">
-        <p className="text-gray-500">RestRankingTable Placeholder (55%)</p>
+      {/* 65% for RestRankingTable (Placeholder) - 修正为65%使总和为100% */}
+      <div className="flex-[65] w-full border-2 border-white">
+        <p className="text-gray-500">RestRankingTable Placeholder (65%)</p>
       </div>
     </div>
   );

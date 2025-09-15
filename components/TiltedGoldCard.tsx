@@ -1,6 +1,9 @@
 import type { SpringOptions } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
+import { gsap } from 'gsap';
+import confetti from 'canvas-confetti';
+import ElectricBorder from './ElectricBorder';
 
 interface TiltedGoldCardProps {
   imageSrc: React.ComponentProps<'img'>['src'];
@@ -18,7 +21,6 @@ interface TiltedGoldCardProps {
   displayOverlayContent?: boolean;
   // 展开式卡片相关props
   showExpandedCard?: boolean;
-  startWiggle?: boolean;
   goldCanExpand?: boolean;
   expandedCardData?: {
     name: string;
@@ -49,7 +51,6 @@ export default function TiltedGoldCard({
   overlayContent = null,
   displayOverlayContent = false,
   showExpandedCard = false,
-  startWiggle: externalStartWiggle = false,
   goldCanExpand = false,
   expandedCardData
 }: TiltedGoldCardProps) {
@@ -69,7 +70,6 @@ export default function TiltedGoldCard({
   const [lastY, setLastY] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showDetailPage, setShowDetailPage] = useState(false);
-  const [startWiggle, setStartWiggle] = useState(false);
 
   function handleMouse(e: React.MouseEvent<HTMLElement>) {
     // 禁用交互旋转与缩放，改为纯展示动画
@@ -91,69 +91,72 @@ export default function TiltedGoldCard({
     rotateFigcaption.set(0);
   }
 
-  // 3D wiggle效果 - 自动轻微摆动
-  useEffect(() => {
-    // 使用内部状态或外部传入的startWiggle状态
-    const shouldWiggle = startWiggle || externalStartWiggle;
-    
-    if (!shouldWiggle) {
-      // 停止wiggle时重置旋转
-      rotateX.set(0);
-      rotateY.set(0);
-      return;
-    }
-    
-    let phase = 0;
-    let animationId: number;
-    
-    const wiggleAnimation = () => {
-      phase += 0.02;
-      
-      if (!ref.current) {
-        animationId = requestAnimationFrame(wiggleAnimation);
-        return;
-      }
-      
-      const rect = ref.current.getBoundingClientRect();
-      
-      // 生成轻微的摆动偏移
-      const wiggleX = Math.sin(phase) * 15; // 15px的摆动幅度
-      const wiggleY = Math.cos(phase * 0.8) * 10; // 10px的摆动幅度
-      
-      const offsetX = wiggleX;
-      const offsetY = wiggleY;
-      
-      const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude * 0.3; // 减小摆动强度
-      const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude * 0.3;
-      
-      rotateX.set(rotationX);
-      rotateY.set(rotationY);
-      
-      animationId = requestAnimationFrame(wiggleAnimation);
-    };
-    
-    // 使用requestAnimationFrame替代setInterval，提高性能
-    animationId = requestAnimationFrame(wiggleAnimation);
-    
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [startWiggle, externalStartWiggle, rotateAmplitude]);
+  // 移除3D wiggle效果
 
+  // ========== 动画顺序第6步：检测detail-page动画完成 ==========
   // 检测detail-page动画完成 + 轻量保底（基于显示状态）
   const handleDetailPageAnimationEnd = (e: React.AnimationEvent) => {
     console.log('动画事件触发:', e.animationName, 'showDetailPage:', showDetailPage);
     if (e.animationName === 'slide-in-bottom' && showDetailPage) {
-      console.log('detail-page动画完成，开始wiggle');
+      console.log('detail-page动画完成，开始数字递增动画');
+      
+      // ========== 动画顺序第7步：GSAP数字递增动画 ==========
       setTimeout(() => {
-        if (!startWiggle) {
-          setStartWiggle(true);
-          window.dispatchEvent(new CustomEvent('goldCardExpanded', {
-            detail: { timestamp: Date.now() }
-          }));
-          console.log('wiggle效果已启动，全局事件已发送');
+        // 获取分数元素并执行数字递增动画
+        const scoreElement = document.querySelector('.grades-box-num');
+        if (scoreElement && expandedCardData) {
+          const targetScore = expandedCardData.score || 0;
+          
+          // 创建一个临时对象来存储当前数字
+          const scoreObj = { value: 0 };
+          
+          // GSAP数字递增动画
+          gsap.to(scoreObj, {
+            value: targetScore,
+            duration: 2,
+            ease: "power2.out",
+            onUpdate: () => {
+              scoreElement.textContent = Math.floor(scoreObj.value).toLocaleString();
+            },
+            onComplete: () => {
+              console.log('数字递增动画完成，开始礼花效果');
+              
+              // ========== 动画顺序第8步：礼花效果 ==========
+              const goldCard = document.querySelector('.expanded-card');
+              if (goldCard) {
+                const rect = goldCard.getBoundingClientRect();
+                const centerX = (rect.left + rect.width / 2) / window.innerWidth;
+                const centerY = (rect.top + rect.height / 2) / window.innerHeight;
+                
+                // 发射多次礼花
+                confetti({
+                  particleCount: 100,
+                  spread: 70,
+                  origin: { x: centerX, y: centerY }
+                });
+                
+                setTimeout(() => {
+                  confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { x: centerX - 0.1, y: centerY }
+                  });
+                }, 200);
+                
+                setTimeout(() => {
+                  confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { x: centerX + 0.1, y: centerY }
+                  });
+                  
+                  // 礼花效果完成
+                }, 400);
+              } else {
+                // 礼花效果完成
+              }
+            }
+          });
         }
       }, 80);
     }
@@ -185,10 +188,12 @@ export default function TiltedGoldCard({
     }
   };
 
+  // ========== 动画顺序第1-5步：自动展开动画启动函数 ==========
   // 自动触发展开动画
   const startAutoExpansion = async () => {
     console.log('开始资源预加载检查...');
     
+    // ========== 动画顺序第1步：等待资源加载完成 ==========
     // 等待资源就绪
     const resourcesReady = await checkResourcesReady();
     
@@ -200,16 +205,24 @@ export default function TiltedGoldCard({
     await new Promise(resolve => setTimeout(resolve, 100));
 
     console.log('资源就绪，开始自动展开动画');
+    // ========== 动画顺序第2步：金卡位移动画 ==========
+    // 金卡向上移动5vh，为展开让出空间（CSS transition: 0.5s）
     setIsExpanded(true);
     
-    // 延迟显示detail-page，等待outline-page动画完成
+    // ========== 动画顺序第3步：outline-page展开动画 ==========
+    // 300ms延迟后开始outline-page展开动画（CSS animation: 0.5s）
+    // ========== 动画顺序第4步：detail-page显示 ==========
+    // 延迟显示detail-page，等待outline-page动画进行到一半时开始
     setTimeout(() => {
       setShowDetailPage(true);
+      // ========== 动画顺序第5步：detail-page滑入动画 ==========
+      // detail-page开始slide-in-bottom动画（CSS animation: 1s）
       // detail-page显示后，等待其动画完成再开始wiggle
       // 动画完成事件会在CSS动画结束时触发
     }, 300); // 300ms延迟，让outline-page动画进行到一半时开始detail-page动画
   };
 
+  // ========== 动画顺序第0步：触发条件检查 ==========
   // 当goldCanExpand为true时触发展开动画
   useEffect(() => {
     if (goldCanExpand) {
@@ -233,7 +246,7 @@ export default function TiltedGoldCard({
           justifyContent: 'center',
           cursor: 'pointer',
           transition: 'transform 0.5s ease-out',
-          transform: isExpanded ? 'translateY(-2vh)' : 'translateY(0)'
+          transform: isExpanded ? 'translateY(-6vh)' : 'translateY(0)'
         }}
         onMouseMove={handleMouse}
         onMouseEnter={handleMouseEnter}
@@ -262,21 +275,38 @@ export default function TiltedGoldCard({
           scale
         }}
       >
-        <motion.img
-          src={imageSrc}
-          alt={altText}
-          style={{
+        <ElectricBorder
+          color="#FFD700"
+          speed={0.5}
+          chaos={0.2}
+          thickness={3}
+          style={{ 
             position: 'absolute',
             top: 0,
             left: 0,
-            objectFit: 'cover',
-            borderRadius: '15px',
-            willChange: 'transform',
-            transform: 'translateZ(0)',
             width: imageWidth,
-            height: imageHeight
+            height: imageHeight,
+            borderRadius: 15,
+            pointerEvents: 'none',
+            zIndex: 10
           }}
-        />
+        >
+          <motion.img
+            src={imageSrc}
+            alt={altText}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              objectFit: 'cover',
+              borderRadius: '15px',
+              willChange: 'transform',
+              transform: 'translateZ(0)',
+              width: imageWidth,
+              height: imageHeight
+            }}
+          />
+        </ElectricBorder>
 
         {displayOverlayContent && overlayContent && (
           <motion.div 
@@ -324,7 +354,7 @@ export default function TiltedGoldCard({
           className="expanded-card" 
           style={{ 
             position: 'absolute',
-            top: 'calc(100% + 0px)', // 紧贴金卡下边缘，无间隙
+            top: 'calc(100% + 3px)', // 金卡和展开卡片之间留2px间隙
             left: '50%',
             transform: 'translateX(-50%)', // 水平居中
             zIndex: 10,
@@ -343,8 +373,8 @@ export default function TiltedGoldCard({
               xmlns="http://www.w3.org/2000/svg"
               style={{ 
                 position: 'absolute',
-                width: 'calc(var(--card-width, 20vh) * 0.3)', // 奖杯宽度 = 卡片宽度的30%
-                height: 'calc(var(--card-width, 20vh) * 0.3)', // 奖杯高度 = 卡片宽度的30%
+                width: 'calc(var(--card-width, 20vh) * 0.2)', // 奖杯宽度 = 卡片宽度的30%
+                height: 'calc(var(--card-width, 20vh) * 0.2)', // 奖杯高度 = 卡片宽度的30%
                 right: 'calc(var(--card-width, 20vh) * 0.1)', // 右边距 = 卡片宽度的10% (可调整)
                 bottom: 'calc(var(--card-width, 20vh) * 0.1)',  // 下边距 = 卡片宽度的10% (可调整)
               }}
@@ -374,11 +404,11 @@ export default function TiltedGoldCard({
               className="ranking-number"
               style={{
                 position: 'absolute',
-                width: 'calc(var(--card-width, 20vh) * 0.4)',     // 宽度 = 卡片宽度的40% (可调整)
-                height: 'calc(var(--card-width, 20vh) * 0.4)',    // 高度 = 卡片宽度的40% (可调整)
-                fontSize: 'calc(var(--card-width, 20vh) * 0.267)', // 排名数字 = 卡片宽度的26.7%
+                width: 'calc(var(--card-width, 20vh) * 0.2)',     // 宽度 = 卡片宽度的40% (可调整)
+                height: 'calc(var(--card-width, 20vh) * 0.2)',    // 高度 = 卡片宽度的40% (可调整)
+                fontSize: 'calc(var(--card-width, 20vh) * 0.2)', // 排名数字 = 卡片宽度的26.7%
                 left: 'calc(var(--card-width, 20vh) * 0.2)',    // 左边距 = 卡片宽度的10% (可调整)
-                top: 'calc(var(--card-width, 20vh) * -0.05)',     // 上边距 = 卡片宽度的-10% (可调整)
+                top: 'calc(var(--card-width, 20vh) * -0.03)',     // 上边距 = 卡片宽度的-10% (可调整)
                 margin: 0,
                 padding: 0,
                 zIndex: 10,
@@ -408,10 +438,10 @@ export default function TiltedGoldCard({
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
               style={{
-                width: 'calc(var(--card-width, 20vh) * 0.267)', // 奖牌宽度 = 卡片宽度的26.7%
-                height: 'calc(var(--card-width, 20vh) * 0.267)', // 奖牌高度 = 卡片宽度的26.7%
-                top: 'calc(var(--card-width, 20vh) * 0.05)',    // 上边距 = 卡片宽度的5%
-                right: 'calc(var(--card-width, 20vh) * 0.017)'  // 右边距 = 卡片宽度的1.7%
+                width: 'calc(var(--card-width, 20vh) * 0.2)', // 奖牌宽度 = 卡片宽度的26.7%
+                height: 'calc(var(--card-width, 20vh) * 0.2)', // 奖牌高度 = 卡片宽度的26.7%
+                top: 'calc(var(--card-width, 20vh) * 0.04)',    // 上边距 = 卡片宽度的5%
+                right: 'calc(var(--card-width, 20vh) * 0.02)'  // 右边距 = 卡片宽度的1.7%
               }}
             >
               <path
@@ -467,8 +497,8 @@ export default function TiltedGoldCard({
             <div 
               className="grades-box"
               style={{
-                height: 'calc(var(--card-width, 20vh) * 0.25)',  // 分数框高度 = 卡片宽度的25%
-                top: 'calc(var(--card-width, 20vh) * 0.033)',   // 上边距 = 卡片宽度的3.3%
+                height: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数框高度 = 卡片宽度的25%
+                top: 'calc(var(--card-width, 20vh) * 0.0)',   // 上边距 = 卡片宽度的3.3%
                 marginRight: 'calc(var(--card-width, 20vh) * 0.033)', // 右边距 = 卡片宽度的3.3%
                 marginLeft: 'calc(var(--card-width, 20vh) * 0.05)'    // 左边距 = 卡片宽度的5%
               }}
@@ -481,7 +511,7 @@ export default function TiltedGoldCard({
                 style={{
                   width: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数图标宽度 = 卡片宽度的20%
                   height: 'calc(var(--card-width, 20vh) * 0.2)', // 分数图标高度 = 卡片宽度的20%
-                  top: 'calc(var(--card-width, 20vh) * 0.033)'   // 上边距 = 卡片宽度的3.3%
+                  top: 'calc(var(--card-width, 20vh) * 0.03)'   // 上边距 = 卡片宽度的3.3%
                 }}
               >
                 <path
@@ -498,25 +528,21 @@ export default function TiltedGoldCard({
                 ></path>
               </svg>
               <p 
-                className="grades-box-label"
-                style={{
-                  fontSize: 'calc(var(--card-width, 20vh) * 0.043)', // 分数标签 = 卡片宽度的4.3%
-                  marginLeft: 'calc(var(--card-width, 20vh) * 0.2)', // 左边距 = 卡片宽度的20%
-                  marginTop: 'calc(var(--card-width, 20vh) * 0.067)', // 上边距 = 卡片宽度的6.7%
-                  letterSpacing: 'calc(var(--card-width, 20vh) * 0.02)' // 字间距 = 卡片宽度的2%
-                }}
-              >
-                SCORE
-              </p>
-              <p 
                 className="grades-box-num"
                 style={{
-                  fontSize: 'calc(var(--card-width, 20vh) * 0.083)', // 分数数字 = 卡片宽度的8.3%
-                  marginLeft: 'calc(var(--card-width, 20vh) * 0.2)', // 左边距 = 卡片宽度的20%
-                  top: 'calc(var(--card-width, 20vh) * -0.017)'      // 上边距 = 卡片宽度的-1.7%
+                  fontSize: 'calc(var(--card-width, 20vh) * 0.12)', // 分数数字 = 卡片宽度的12%（增大字体）
+                  fontFamily: 'AlibabaPuHuiTi-3-55-Regular', // 使用阿里巴巴普惠体
+                  marginLeft: 'calc(var(--card-width, 20vh) * 0.17)', // 左边距 = 卡片宽度的20%
+                  marginTop: 'calc(var(--card-width, 20vh) * 0.06)', // 上边距 = 卡片宽度的2%（居中显示）
+                  textAlign: 'center', // 居中对齐
+                  width: 'calc(var(--card-width, 20vh) * 0.6)', // 宽度 = 卡片宽度的60%
+                  height: 'calc(var(--card-width, 20vh) * 0.16)', // 高度 = 卡片宽度的16%
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
-                {expandedCardData.score}
+                {/* 初始为空，通过GSAP动画填充数字 */}
               </p>
             </div>
           </div>
