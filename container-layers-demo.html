@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>容器查询层级对比演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 方案1：只在卡片外层设置容器查询 */
+        .single-container {
+            container-type: size;
+            container-name: single;
+        }
+        
+        /* 方案2：多层级容器查询 */
+        .outer-container {
+            container-type: size;
+            container-name: outer;
+        }
+        
+        .inner-container {
+            container-type: size;
+            container-name: inner;
+        }
+        
+        /* 基于不同容器的样式 */
+        @container single (min-height: 100px) {
+            .single-card {
+                background: linear-gradient(45deg, #ef4444, #dc2626);
+                padding: 1rem;
+            }
+        }
+        
+        @container single (min-height: 200px) {
+            .single-card {
+                padding: 1.5rem;
+                font-size: 1.125rem;
+            }
+        }
+        
+        @container outer (min-height: 100px) {
+            .outer-card {
+                background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+                padding: 0.5rem;
+            }
+        }
+        
+        @container inner (min-height: 50px) {
+            .inner-card {
+                background: linear-gradient(45deg, #10b981, #059669);
+                padding: 1rem;
+                border-radius: 8px;
+            }
+        }
+        
+        @container inner (min-height: 100px) {
+            .inner-card {
+                padding: 1.5rem;
+                font-size: 1.125rem;
+                border-radius: 12px;
+            }
+        }
+        
+        /* 高度指示器 */
+        .height-indicator {
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-6xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-center mb-8">容器查询层级设置对比</h1>
+        
+        <!-- 控制面板 -->
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">调整容器高度观察差异</h2>
+            <div class="flex gap-4 items-center">
+                <label class="flex items-center gap-2">
+                    外层高度: 
+                    <input type="range" id="outerHeight" min="100" max="400" value="200" class="w-32">
+                    <span id="outerHeightValue">200px</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    内层比例: 
+                    <input type="range" id="innerRatio" min="50" max="100" value="85" class="w-32">
+                    <span id="innerRatioValue">85%</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 方案对比 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 方案1：单层容器查询 -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4 text-red-600">❌ 方案1：只在卡片外层设置</h2>
+                <div class="border-2 border-dashed border-gray-300 p-4 rounded" style="height: 200px;">
+                    <div class="text-sm text-gray-600 mb-2">外层容器 (无@container)</div>
+                    <div class="h-full flex justify-center items-end">
+                        <div class="single-container relative border-2 border-red-300 p-2 rounded" style="height: 85%; width: 80px;">
+                            <div class="height-indicator" id="singleHeight">85%</div>
+                            <div class="single-card text-white text-xs h-full flex flex-col justify-center items-center rounded">
+                                <div class="font-bold">卡片</div>
+                                <div>基于外层</div>
+                                <div>计算不准确</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    问题：cqh单位基于什么容器计算？可能是视口或其他不确定的容器
+                </div>
+            </div>
+            
+            <!-- 方案2：多层级容器查询 -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4 text-green-600">✅ 方案2：多层级设置</h2>
+                <div class="outer-container border-2 border-dashed border-blue-300 p-4 rounded" style="height: 200px;">
+                    <div class="text-sm text-blue-600 mb-2">外层容器 (@container)</div>
+                    <div class="h-full flex justify-center items-end">
+                        <div class="inner-container relative border-2 border-green-300 p-2 rounded" style="height: 85%; width: 80px;">
+                            <div class="height-indicator" id="multiHeight">85%</div>
+                            <div class="inner-card text-white text-xs h-full flex flex-col justify-center items-center rounded">
+                                <div class="font-bold">卡片</div>
+                                <div>基于内层</div>
+                                <div>计算精确</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    优势：cqh单位明确基于内层容器(85%高度)计算，结果可预测
+                </div>
+            </div>
+        </div>
+        
+        <!-- 实际代码对比 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-red-700 mb-2">❌ 错误方式</h3>
+                <pre class="bg-red-100 p-3 rounded text-sm overflow-x-auto"><code>&lt;div className="h-[35%]"&gt;              {/* 无@container */}
+  &lt;Top3Container&gt;
+    &lt;div className="h-[85%] @container"&gt;  {/* 只在这里 */}
+      &lt;Card className="h-[80cqh]"&gt;        {/* 基于什么？ */}
+    &lt;/div&gt;
+  &lt;/Top3Container&gt;
+&lt;/div&gt;</code></pre>
+            </div>
+            
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-green-700 mb-2">✅ 正确方式</h3>
+                <pre class="bg-green-100 p-3 rounded text-sm overflow-x-auto"><code>&lt;div className="h-[35%] @container"&gt;    {/* 建立上下文 */}
+  &lt;Top3Container&gt;
+    &lt;div className="h-[85%] @container"&gt;  {/* 精确控制 */}
+      &lt;Card className="h-[80cqh]"&gt;        {/* 基于85%高度 */}
+    &lt;/div&gt;
+  &lt;/Top3Container&gt;
+&lt;/div&gt;</code></pre>
+            </div>
+        </div>
+        
+        <!-- 计算链说明 -->
+        <div class="bg-blue-50 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">🧮 计算链详解</h3>
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                    <span><strong>第1层</strong>: h-[35%] @container → 35% × 视口高度 = <span id="layer1">200px</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-green-500 rounded"></div>
+                    <span><strong>第2层</strong>: h-full → 100% × <span id="layer2">200px</span> = <span id="layer2result">200px</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <span><strong>第3层</strong>: h-[85%] @container → 85% × <span id="layer3">200px</span> = <span id="layer3result">170px</span> (容器查询基准)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-red-500 rounded"></div>
+                    <span><strong>第4层</strong>: h-[80cqh] → 80% × <span id="layer4">170px</span> = <span id="layer4result">136px</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const outerHeightSlider = document.getElementById('outerHeight');
+        const innerRatioSlider = document.getElementById('innerRatio');
+        const outerHeightValue = document.getElementById('outerHeightValue');
+        const innerRatioValue = document.getElementById('innerRatioValue');
+        
+        function updateDemo() {
+            const outerHeight = parseInt(outerHeightSlider.value);
+            const innerRatio = parseInt(innerRatioSlider.value);
+            
+            outerHeightValue.textContent = outerHeight + 'px';
+            innerRatioValue.textContent = innerRatio + '%';
+            
+            // 更新容器高度
+            document.querySelectorAll('.outer-container, .border-dashed').forEach(el => {
+                el.style.height = outerHeight + 'px';
+            });
+            
+            // 更新内层比例
+            document.querySelectorAll('.single-container, .inner-container').forEach(el => {
+                el.style.height = innerRatio + '%';
+            });
+            
+            // 更新计算链显示
+            const layer1 = outerHeight;
+            const layer2 = layer1;
+            const layer3 = layer1;
+            const layer3result = Math.round(layer1 * innerRatio / 100);
+            const layer4result = Math.round(layer3result * 0.8);
+            
+            document.getElementById('layer1').textContent = layer1 + 'px';
+            document.getElementById('layer2').textContent = layer2 + 'px';
+            document.getElementById('layer2result').textContent = layer2 + 'px';
+            document.getElementById('layer3').textContent = layer3 + 'px';
+            document.getElementById('layer3result').textContent = layer3result + 'px';
+            document.getElementById('layer4').textContent = layer3result + 'px';
+            document.getElementById('layer4result').textContent = layer4result + 'px';
+            
+            document.getElementById('singleHeight').textContent = innerRatio + '%';
+            document.getElementById('multiHeight').textContent = innerRatio + '%';
+        }
+        
+        outerHeightSlider.addEventListener('input', updateDemo);
+        innerRatioSlider.addEventListener('input', updateDemo);
+        
+        // 初始化
+        updateDemo();
+    </script>
+</body>
+</html>

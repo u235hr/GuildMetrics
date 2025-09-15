@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>容器查询问题调试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 模拟您的实际情况 */
+        .outer-wrapper {
+            height: 35vh;
+            background: #1f2937;
+            border: 2px solid #3b82f6;
+        }
+        
+        .top3-container {
+            height: 100%;
+            background: #374151;
+            border: 2px solid #10b981;
+        }
+        
+        .card-wrapper {
+            height: 85%;
+            background: #4b5563;
+            border: 2px solid #f59e0b;
+        }
+        
+        /* 不同的容器查询设置 */
+        .no-container {
+            /* 没有容器查询 */
+        }
+        
+        .wrapper-container {
+            container-type: size;
+            container-name: wrapper;
+        }
+        
+        .card-container {
+            container-type: size;
+            container-name: card;
+        }
+        
+        .both-container {
+            container-type: size;
+            container-name: both;
+        }
+        
+        /* 银卡样式 */
+        .silver-card {
+            background: linear-gradient(to bottom right, #d1d5db, #9ca3af, #6b7280);
+            color: white;
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        /* 调试信息 */
+        .debug-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            font-size: 10px;
+            font-family: monospace;
+            display: none;
+            z-index: 10;
+        }
+        
+        .container:hover .debug-overlay {
+            display: block;
+        }
+        
+        .height-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 8px;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4">
+    <div class="max-w-6xl mx-auto space-y-6">
+        <h1 class="text-2xl font-bold text-center mb-6">容器查询问题实时调试</h1>
+        
+        <!-- 控制面板 -->
+        <div class="bg-gray-800 p-4 rounded-lg">
+            <h2 class="text-lg font-semibold mb-3">实时调试控制</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <label class="flex flex-col">
+                    外层高度 (35vh):
+                    <input type="range" id="outerHeight" min="20" max="50" value="35" class="mt-1">
+                    <span id="outerValue">35vh</span>
+                </label>
+                <label class="flex flex-col">
+                    卡片包装高度:
+                    <input type="range" id="cardHeight" min="70" max="100" value="85" class="mt-1">
+                    <span id="cardValue">85%</span>
+                </label>
+                <label class="flex flex-col">
+                    银卡cqh值:
+                    <input type="range" id="cqhValue" min="50" max="120" value="80" class="mt-1">
+                    <span id="cqhDisplay">80cqh</span>
+                </label>
+                <button id="toggleDebug" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm">
+                    显示调试信息
+                </button>
+            </div>
+        </div>
+        
+        <!-- 四种场景对比 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+            
+            <!-- 场景1: 无容器查询 -->
+            <div class="bg-gray-800 p-3 rounded-lg">
+                <h3 class="text-sm font-semibold mb-2 text-red-400">场景1: 无@container</h3>
+                <div class="outer-wrapper no-container relative container">
+                    <div class="height-indicator" id="outer1">35vh</div>
+                    <div class="debug-overlay">
+                        外层: 无container-type<br>
+                        高度: <span id="outer1-px">200px</span><br>
+                        容器查询上下文: 无
+                    </div>
+                    
+                    <div class="top3-container flex justify-center items-end p-2">
+                        <div class="card-wrapper no-container relative container" style="width: 60px;">
+                            <div class="height-indicator" id="card1">85%</div>
+                            <div class="debug-overlay">
+                                卡片包装: 无container-type<br>
+                                高度: <span id="card1-px">170px</span><br>
+                                容器查询上下文: 无
+                            </div>
+                            
+                            <div class="silver-card relative" style="height: 80%;" id="silver1">
+                                <div class="text-xs font-bold">银卡</div>
+                                <div class="text-xs">80% (fallback)</div>
+                                <div class="text-xs">实际: <span id="silver1-px">136px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 场景2: 只在外层设置 -->
+            <div class="bg-gray-800 p-3 rounded-lg">
+                <h3 class="text-sm font-semibold mb-2 text-yellow-400">场景2: 外层@container</h3>
+                <div class="outer-wrapper wrapper-container relative container">
+                    <div class="height-indicator" id="outer2">35vh</div>
+                    <div class="debug-overlay">
+                        外层: container-type: size<br>
+                        高度: <span id="outer2-px">200px</span><br>
+                        容器查询上下文: wrapper
+                    </div>
+                    
+                    <div class="top3-container flex justify-center items-end p-2">
+                        <div class="card-wrapper no-container relative container" style="width: 60px;">
+                            <div class="height-indicator" id="card2">85%</div>
+                            <div class="debug-overlay">
+                                卡片包装: 无container-type<br>
+                                高度: <span id="card2-px">170px</span><br>
+                                容器查询上下文: 继承wrapper
+                            </div>
+                            
+                            <div class="silver-card relative" id="silver2">
+                                <div class="text-xs font-bold">银卡</div>
+                                <div class="text-xs" id="cqh2">80cqh</div>
+                                <div class="text-xs">基于外层</div>
+                                <div class="text-xs">实际: <span id="silver2-px">160px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 场景3: 只在卡片包装设置 -->
+            <div class="bg-gray-800 p-3 rounded-lg">
+                <h3 class="text-sm font-semibold mb-2 text-blue-400">场景3: 卡片包装@container</h3>
+                <div class="outer-wrapper no-container relative container">
+                    <div class="height-indicator" id="outer3">35vh</div>
+                    <div class="debug-overlay">
+                        外层: 无container-type<br>
+                        高度: <span id="outer3-px">200px</span><br>
+                        容器查询上下文: 无
+                    </div>
+                    
+                    <div class="top3-container flex justify-center items-end p-2">
+                        <div class="card-wrapper card-container relative container" style="width: 60px;">
+                            <div class="height-indicator" id="card3">85%</div>
+                            <div class="debug-overlay">
+                                卡片包装: container-type: size<br>
+                                高度: <span id="card3-px">170px</span><br>
+                                容器查询上下文: card
+                            </div>
+                            
+                            <div class="silver-card relative" id="silver3">
+                                <div class="text-xs font-bold">银卡</div>
+                                <div class="text-xs" id="cqh3">80cqh</div>
+                                <div class="text-xs">基于包装</div>
+                                <div class="text-xs">实际: <span id="silver3-px">136px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 场景4: 两层都设置 -->
+            <div class="bg-gray-800 p-3 rounded-lg">
+                <h3 class="text-sm font-semibold mb-2 text-green-400">场景4: 两层@container</h3>
+                <div class="outer-wrapper both-container relative container">
+                    <div class="height-indicator" id="outer4">35vh</div>
+                    <div class="debug-overlay">
+                        外层: container-type: size<br>
+                        高度: <span id="outer4-px">200px</span><br>
+                        容器查询上下文: both
+                    </div>
+                    
+                    <div class="top3-container flex justify-center items-end p-2">
+                        <div class="card-wrapper both-container relative container" style="width: 60px;">
+                            <div class="height-indicator" id="card4">85%</div>
+                            <div class="debug-overlay">
+                                卡片包装: container-type: size<br>
+                                高度: <span id="card4-px">170px</span><br>
+                                容器查询上下文: both (最近的)
+                            </div>
+                            
+                            <div class="silver-card relative" id="silver4">
+                                <div class="text-xs font-bold">银卡</div>
+                                <div class="text-xs" id="cqh4">80cqh</div>
+                                <div class="text-xs">基于包装</div>
+                                <div class="text-xs">实际: <span id="silver4-px">136px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 问题分析 -->
+        <div class="bg-red-900 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-red-300 mb-3">🚨 您遇到的问题分析</h3>
+            <div class="space-y-2 text-sm">
+                <div><strong>现象1:</strong> 银卡设置80cqh后"冲到整个屏幕高度" → 可能基于了视口而不是预期容器</div>
+                <div><strong>现象2:</strong> 外层包裹设置@container后，银卡80cqh"变得异常短" → 基于了外层容器而不是卡片包装</div>
+                <div><strong>根本原因:</strong> 容器查询的"最近祖先"查找机制导致计算基准不稳定</div>
+            </div>
+        </div>
+        
+        <!-- 解决方案 -->
+        <div class="bg-green-900 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-green-300 mb-3">💡 推荐解决方案</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <h4 class="font-semibold mb-2">方案A: 使用百分比 (推荐)</h4>
+                    <pre class="bg-gray-800 p-2 rounded text-xs"><code>// 简单可靠
+&lt;SilverCard className="h-[80%]" /&gt;</code></pre>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">方案B: 精确控制容器查询</h4>
+                    <pre class="bg-gray-800 p-2 rounded text-xs"><code>// 只在需要的地方设置
+&lt;div className="h-[85%] @container"&gt;
+  &lt;SilverCard className="h-[80cqh]" /&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const outerSlider = document.getElementById('outerHeight');
+        const cardSlider = document.getElementById('cardHeight');
+        const cqhSlider = document.getElementById('cqhValue');
+        const toggleBtn = document.getElementById('toggleDebug');
+        
+        let debugMode = false;
+        
+        function updateValues() {
+            const outerVh = parseInt(outerSlider.value);
+            const cardPercent = parseInt(cardSlider.value);
+            const cqhValue = parseInt(cqhSlider.value);
+            
+            // 假设视口高度为600px
+            const viewportHeight = 600;
+            const outerPx = Math.round(viewportHeight * outerVh / 100);
+            const cardPx = Math.round(outerPx * cardPercent / 100);
+            
+            // 更新显示值
+            document.getElementById('outerValue').textContent = outerVh + 'vh';
+            document.getElementById('cardValue').textContent = cardPercent + '%';
+            document.getElementById('cqhDisplay').textContent = cqhValue + 'cqh';
+            
+            // 更新所有外层容器
+            document.querySelectorAll('.outer-wrapper').forEach(el => {
+                el.style.height = outerVh + 'vh';
+            });
+            
+            // 更新所有卡片包装
+            document.querySelectorAll('.card-wrapper').forEach(el => {
+                el.style.height = cardPercent + '%';
+            });
+            
+            // 更新像素值显示
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`outer${i}-px`).textContent = outerPx + 'px';
+                document.getElementById(`card${i}-px`).textContent = cardPx + 'px';
+            }
+            
+            // 计算不同场景下的银卡高度
+            const silver1 = Math.round(cardPx * 0.8); // 80%
+            const silver2 = Math.round(outerPx * cqhValue / 100); // 基于外层
+            const silver3 = Math.round(cardPx * cqhValue / 100); // 基于卡片包装
+            const silver4 = Math.round(cardPx * cqhValue / 100); // 基于最近的容器
+            
+            document.getElementById('silver1-px').textContent = silver1 + 'px';
+            document.getElementById('silver2-px').textContent = silver2 + 'px';
+            document.getElementById('silver3-px').textContent = silver3 + 'px';
+            document.getElementById('silver4-px').textContent = silver4 + 'px';
+            
+            // 更新cqh显示
+            document.getElementById('cqh2').textContent = cqhValue + 'cqh';
+            document.getElementById('cqh3').textContent = cqhValue + 'cqh';
+            document.getElementById('cqh4').textContent = cqhValue + 'cqh';
+            
+            // 实际设置银卡高度 (模拟容器查询效果)
+            document.getElementById('silver2').style.height = (cqhValue * outerPx / outerPx) + '%';
+            document.getElementById('silver3').style.height = cqhValue + '%';
+            document.getElementById('silver4').style.height = cqhValue + '%';
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const overlays = document.querySelectorAll('.debug-overlay');
+            overlays.forEach(overlay => {
+                overlay.style.display = debugMode ? 'block' : 'none';
+            });
+            toggleBtn.textContent = debugMode ? '隐藏调试信息' : '显示调试信息';
+        }
+        
+        outerSlider.addEventListener('input', updateValues);
+        cardSlider.addEventListener('input', updateValues);
+        cqhSlider.addEventListener('input', updateValues);
+        toggleBtn.addEventListener('click', toggleDebug);
+        
+        // 初始化
+        updateValues();
+    </script>
+</body>
+</html>

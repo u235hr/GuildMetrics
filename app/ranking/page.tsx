@@ -36,29 +36,29 @@ export default function RankingPage() {
     gold: {
       name: rankingData[0]?.name || '暂无数据',
       value: rankingData[0]?.coins.toLocaleString() || '0',
-      avatar: '/avatars/外国女人头像3_未抠图.jpg'
+      avatar: '/avatars/外国女人头像1_未抠图.jpeg'
     },
     silver: {
       name: rankingData[1]?.name || '暂无数据',
       value: rankingData[1]?.coins.toLocaleString() || '0',
-      avatar: '/avatars/avatar2.svg'
+      avatar: '/avatars/外国女人头像3_未抠图.jpg'
     },
     bronze: {
       name: rankingData[2]?.name || '暂无数据',
       value: rankingData[2]?.coins.toLocaleString() || '0',
-      avatar: '/avatars/avatar3.svg'
+      avatar: '/avatars/外国女人头像4_未抠图.jpg'
     }
   };
 
   return (
-    <div className="h-full w-full grid grid-rows-[35fr_55fr]">
-      {/* 35% for Top3Container */}
-      <div className="min-h-0 @container">
+    <div className="h-full w-full">
+      {/* 35% for Top3Container with container query */}
+      <div className="h-[35%] w-full @container" style={{ overflow: 'visible' }}>
         <Top3Container data={top3Data} />
       </div>
 
       {/* 55% for RestRankingTable (Placeholder) */}
-      <div className="min-h-0 bg-black/20 m-2 rounded-lg flex items-center justify-center">
+      <div className="h-[55%] w-full border-2 border-white">
         <p className="text-gray-500">RestRankingTable Placeholder (55%)</p>
       </div>
     </div>

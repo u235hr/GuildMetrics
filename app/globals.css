@@ -1,3 +1,257 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@font-face {
+  font-family: 'AlibabaPuHuiTi-3-55-Regular';
+  src: url('/fonts/AlibabaPuHuiTi-3-55-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 使用vh单位，无需媒体查询 */
+
+/* 展开式金卡样式 */
+    .expanded-card {
+      position: relative;
+      height: 6vh; /* 调整基础高度到6vh */
+      transition-duration: 0.5s;
+      background: none;
+      overflow: visible; /* 改为visible，让圆角正确显示 */
+      width: var(--card-width, 20vh); /* 使用CSS变量，默认20vh */
+      margin: 0 auto;
+    }
+
+    .expanded-card:hover {
+      height: 12vh; /* 调整展开后的总高度到12vh */
+    }
+
+/* 当金卡展开时，outline-page显示阴影效果 */
+.expanded-card .outline-page {
+  box-shadow: 0 10px 15px #b1985e;
+}
+
+/* detail-page的显示现在由JavaScript控制，不需要CSS规则 */
+
+    .outline-page {
+      position: relative;
+      background: linear-gradient(45deg, #fffbf0, #ffdd87);
+      width: 100%;
+      height: 6vh; /* 调整上半部分高度，配合总高度6vh */
+      border-radius: 1.67vh; /* 对应demo的25px/300px = 0.083比例 */
+      transition: all 0.5s ease-out;
+      z-index: 2;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .outline-page.expanded {
+      animation: outline-expand 0.5s cubic-bezier(0.65, 0.05, 0.36, 1) both;
+    }
+
+    .outline-page.collapsed {
+      animation: outline-collapse 0.5s cubic-bezier(0.65, 0.05, 0.36, 1) both;
+    }
+
+    .detail-page {
+      position: relative;
+      display: none; /* 默认隐藏 */
+      width: 100%;
+      height: 6vh; /* 调整下半部分高度，配合总高度12vh */
+      background: white;
+      top: -1.33vh; /* 对应demo的-20px/300px = -0.067比例 */
+      z-index: 1;
+      border-radius: 0 0 1.67vh 1.67vh; /* 对应demo的25px/300px */
+      overflow: hidden;
+      align-items: center;
+      justify-content: flex-start;
+      /* 确保圆角正确显示，不被父容器裁剪 */
+      margin-top: 0;
+    }
+
+    .detail-page.show {
+      display: flex;
+      animation: slide-in-bottom 1s cubic-bezier(0.65, 0.05, 0.36, 1) both;
+    }
+
+    .detail-page.hide {
+      animation: slide-out-bottom 0.5s cubic-bezier(0.65, 0.05, 0.36, 1) both;
+    }
+
+    .split-line {
+      position: absolute;
+      width: 13.33vh; /* 对应demo的200px/300px = 0.667比例 */
+      height: 0.67vh; /* 对应demo的10px/300px = 0.033比例 */
+      top: 4vh; /* 调整位置，适应6vh高度 */
+      left: 50%;
+      transform: translateX(-50%);
+      background-image: linear-gradient(
+        to right,
+        transparent 10%,
+        #ffe8a0 20%,
+        #f7b733 50%,
+        #ffe8a0 70%,
+        transparent 90%
+      );
+      z-index: 1;
+    }
+
+.trophy {
+  position: absolute;
+  right: 0px;
+  top: 0.2vh; /* 调整位置，适应6vh高度 */
+  z-index: 2;
+  width: 8vh; /* 调整大小，适应6vh高度 */
+  height: 8vh;
+}
+
+.ranking-number {
+  position: relative;
+  color: #ffc64b;
+  font-family: "AlibabaPuHuiTi-3-55-Regular", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 700;
+  font-size: 4vh; /* 调整字体大小，适应6vh高度 */
+  left: 1vh; /* 调整位置，适应6vh高度 */
+  padding: 0;
+  margin: 0;
+  top: -0.2vh; /* 调整位置，适应6vh高度 */
+}
+
+.ranking-word {
+  position: relative;
+  font-size: 2vh; /* 调整字体大小，适应6vh高度 */
+  color: #424c50;
+}
+
+.user-avatar {
+  position: absolute;
+  bottom: 0.3vh; /* 调整位置，适应6vh高度 */
+  left: 1vh; /* 调整位置，适应6vh高度 */
+  width: 1.2vh; /* 调整大小，适应6vh高度 */
+  height: 1.2vh;
+}
+
+.user-name {
+  position: relative;
+  font-weight: 600;
+  color: #6b7578;
+  left: 2.5vh; /* 调整位置，适应6vh高度 */
+  font-size: 0.9vh; /* 调整字体大小，适应6vh高度 */
+  top: -0.1vh; /* 调整位置，适应6vh高度 */
+  font-family: "AlibabaPuHuiTi-3-55-Regular", Arial, Helvetica, sans-serif;
+}
+
+.medals {
+  position: absolute;
+  top: 0.8vh; /* 调整位置，适应6vh高度 */
+  right: 0.2vh; /* 调整位置，适应6vh高度 */
+  width: 4vh; /* 调整大小，适应6vh高度 */
+  height: 4vh;
+}
+
+.grades-box {
+  position: relative;
+  height: 3.5vh; /* 调整高度，适应6vh高度 */
+  top: 0.5vh; /* 调整位置，适应6vh高度 */
+  margin-right: 0.5vh; /* 调整边距，适应6vh高度 */
+  margin-left: 0.8vh; /* 调整边距，适应6vh高度 */
+}
+
+.grades-icon {
+  position: absolute;
+  top: 0.5vh; /* 调整位置，适应6vh高度 */
+  width: 2.5vh; /* 调整大小，适应6vh高度 */
+  height: 2.5vh;
+}
+
+.grades-box-label {
+  position: relative;
+  display: block;
+  margin-left: 2.5vh; /* 调整边距，适应6vh高度 */
+  color: #424c50;
+  letter-spacing: 0.3vh; /* 调整字间距，适应6vh高度 */
+  font-family: "AlibabaPuHuiTi-3-55-Regular", Arial, Helvetica, sans-serif;
+  margin-top: 1vh; /* 调整边距，适应6vh高度 */
+  font-weight: 800;
+  font-size: 0.6vh; /* 调整字体大小，适应6vh高度 */
+}
+
+.grades-box-num {
+  position: relative;
+  font-family: "AlibabaPuHuiTi-3-55-Regular", Arial, Helvetica, sans-serif;
+  display: block;
+  font-size: 1.2vh; /* 调整字体大小，适应6vh高度 */
+  font-weight: 800;
+  margin-left: 2.5vh; /* 调整边距，适应6vh高度 */
+  color: #ea9518;
+  top: -0.2vh; /* 调整位置，适应6vh高度 */
+}
+
+.slide-in-top {
+  animation: slide-in-top 1s cubic-bezier(0.65, 0.05, 0.36, 1) both;
+}
+
+@keyframes slide-in-top {
+  0% {
+    transform: translateY(-10vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-bottom {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-bottom {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+@keyframes outline-expand {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.02);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes outline-collapse {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(5px) scale(0.98);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}

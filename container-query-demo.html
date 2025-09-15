@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS 容器查询完整示例</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            plugins: [
+                // 模拟容器查询插件
+                function({ addUtilities }) {
+                    addUtilities({
+                        '.container-query': {
+                            'container-type': 'inline-size',
+                        },
+                        '.container-query-size': {
+                            'container-type': 'size',
+                        }
+                    })
+                }
+            ]
+        }
+    </script>
+    <style>
+        /* 容器查询规则 */
+        .card-container {
+            container-type: inline-size;
+            container-name: card;
+        }
+        
+        .responsive-card {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            transition: all 0.3s ease;
+        }
+        
+        /* 基于容器宽度的响应式 */
+        @container card (min-width: 200px) {
+            .responsive-card {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+        }
+        
+        @container card (min-width: 300px) {
+            .responsive-card {
+                padding: 1.5rem;
+                font-size: 1.125rem;
+                border-radius: 12px;
+            }
+        }
+        
+        @container card (min-width: 400px) {
+            .responsive-card {
+                padding: 2rem;
+                font-size: 1.25rem;
+                border-radius: 16px;
+            }
+        }
+        
+        /* 高度容器查询 */
+        .height-container {
+            container-type: size;
+            container-name: height-demo;
+        }
+        
+        @container height-demo (min-height: 200px) {
+            .height-responsive {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+        
+        @container height-demo (min-height: 300px) {
+            .height-responsive {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-6xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Tailwind CSS 容器查询完整指南</h1>
+        
+        <!-- 1. 基础容器查询示例 -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">1. 基础容器查询 - 宽度响应</h2>
+            <p class="text-gray-600 mb-4">拖动浏览器窗口或调整容器大小，观察卡片如何响应容器宽度变化</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- 小容器 -->
+                <div class="card-container w-full border-2 border-dashed border-gray-300 p-2">
+                    <div class="responsive-card text-white p-2 rounded text-sm">
+                        <h3 class="font-bold">小容器</h3>
+                        <p>宽度 < 200px</p>
+                    </div>
+                </div>
+                
+                <!-- 中等容器 -->
+                <div class="card-container w-full border-2 border-dashed border-gray-300 p-2" style="min-width: 250px;">
+                    <div class="responsive-card text-white p-2 rounded text-sm">
+                        <h3 class="font-bold">中等容器</h3>
+                        <p>宽度 200px - 300px</p>
+                    </div>
+                </div>
+                
+                <!-- 大容器 -->
+                <div class="card-container w-full border-2 border-dashed border-gray-300 p-2" style="min-width: 350px;">
+                    <div class="responsive-card text-white p-2 rounded text-sm">
+                        <h3 class="font-bold">大容器</h3>
+                        <p>宽度 > 300px</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 2. 高度容器查询示例 -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">2. 高度容器查询</h2>
+            <p class="text-gray-600 mb-4">基于容器高度的响应式布局</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="height-container border-2 border-dashed border-gray-300 p-2" style="height: 150px;">
+                    <div class="height-responsive bg-green-500 text-white p-2 rounded h-full">
+                        <div>矮容器</div>
+                        <div class="text-sm">高度 < 200px</div>
+                    </div>
+                </div>
+                
+                <div class="height-container border-2 border-dashed border-gray-300 p-2" style="height: 250px;">
+                    <div class="height-responsive bg-blue-500 text-white p-2 rounded h-full">
+                        <div>中等高度</div>
+                        <div class="text-sm">高度 200px - 300px</div>
+                    </div>
+                </div>
+                
+                <div class="height-container border-2 border-dashed border-gray-300 p-2" style="height: 350px;">
+                    <div class="height-responsive bg-purple-500 text-white p-2 rounded h-full">
+                        <div>高容器</div>
+                        <div class="text-sm">高度 > 300px</div>
+                        <div class="text-xs mt-2">更多内容空间</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 3. 嵌套容器查询 -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">3. 嵌套容器查询</h2>
+            <p class="text-gray-600 mb-4">多层级容器查询的正确使用方式</p>
+            
+            <div class="card-container border-2 border-blue-300 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">外层容器 (container-type: inline-size)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="height-container border-2 border-green-300 p-2 rounded" style="height: 200px;">
+                        <div class="height-responsive bg-gradient-to-r from-green-400 to-blue-500 text-white p-2 rounded h-full">
+                            <div class="font-semibold">嵌套容器 1</div>
+                            <div class="text-sm">同时响应宽度和高度</div>
+                        </div>
+                    </div>
+                    <div class="height-container border-2 border-green-300 p-2 rounded" style="height: 200px;">
+                        <div class="height-responsive bg-gradient-to-r from-purple-400 to-pink-500 text-white p-2 rounded h-full">
+                            <div class="font-semibold">嵌套容器 2</div>
+                            <div class="text-sm">独立的容器查询上下文</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 4. 实际应用场景 -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">4. 实际应用：卡片布局</h2>
+            <p class="text-gray-600 mb-4">模拟您的金银铜卡片布局</p>
+            
+            <div class="card-container h-64 border-2 border-dashed border-gray-400 p-4 rounded-lg">
+                <div class="flex justify-center items-end gap-4 h-full">
+                    <!-- 银卡 -->
+                    <div class="height-container flex-1 max-w-24" style="height: 80%;">
+                        <div class="height-responsive bg-gradient-to-br from-gray-300 to-gray-500 text-white rounded-lg h-full flex flex-col justify-between p-2">
+                            <div class="text-xs font-bold">银卡</div>
+                            <div class="text-xs">80%高度</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 金卡 -->
+                    <div class="height-container flex-1 max-w-24 h-full">
+                        <div class="height-responsive bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-lg h-full flex flex-col justify-between p-2">
+                            <div class="text-xs font-bold">金卡</div>
+                            <div class="text-xs">100%高度</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 铜卡 -->
+                    <div class="height-container flex-1 max-w-24" style="height: 80%;">
+                        <div class="height-responsive bg-gradient-to-br from-amber-600 to-amber-800 text-white rounded-lg h-full flex flex-col justify-between p-2">
+                            <div class="text-xs font-bold">铜卡</div>
+                            <div class="text-xs">80%高度</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 5. 配置说明 -->
+        <section class="bg-gray-50 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">5. 配置要点</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Tailwind 配置</h3>
+                    <pre class="bg-gray-800 text-green-400 p-3 rounded text-sm overflow-x-auto"><code>// tailwind.config.js
+module.exports = {
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ],
+}</code></pre>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">CSS 容器类型</h3>
+                    <pre class="bg-gray-800 text-green-400 p-3 rounded text-sm overflow-x-auto"><code>/* 宽度查询 */
+container-type: inline-size;
+
+/* 高度查询 */  
+container-type: size;
+
+/* 命名容器 */
+container-name: my-container;</code></pre>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        // 动态调整演示
+        function createResizableDemo() {
+            const containers = document.querySelectorAll('.card-container');
+            containers.forEach(container => {
+                container.addEventListener('mouseenter', () => {
+                    container.style.transition = 'all 0.3s ease';
+                });
+            });
+        }
+        
+        createResizableDemo();
+    </script>
+</body>
+</html>

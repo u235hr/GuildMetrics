@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>容器查询上下文查找机制</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 演示不同的容器查询上下文 */
+        .no-container {
+            /* 没有container-type，不是容器查询上下文 */
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        
+        .with-container {
+            container-type: size;
+            container-name: demo-container;
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+        }
+        
+        .viewport-container {
+            /* 模拟视口作为容器 */
+            container-type: size;
+            container-name: viewport;
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+        
+        /* 基于不同容器的查询 */
+        @container demo-container (min-height: 100px) {
+            .demo-card {
+                background: linear-gradient(45deg, #22c55e, #16a34a);
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+            }
+        }
+        
+        @container demo-container (min-height: 150px) {
+            .demo-card {
+                padding: 1.5rem;
+                font-size: 1.125rem;
+            }
+        }
+        
+        @container viewport (min-height: 200px) {
+            .viewport-card {
+                background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+            }
+        }
+        
+        /* 没有容器查询上下文时的样式 */
+        .orphan-card {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+        
+        /* 调试信息 */
+        .debug-info {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-family: monospace;
+        }
+        
+        .context-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .context-none { background: #ef4444; color: white; }
+        .context-local { background: #22c55e; color: white; }
+        .context-viewport { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-6xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-center mb-8">容器查询上下文查找机制详解</h1>
+        
+        <!-- 控制面板 -->
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">调整高度观察cqh的计算基准</h2>
+            <div class="flex gap-4 items-center flex-wrap">
+                <label class="flex items-center gap-2">
+                    外层高度: 
+                    <input type="range" id="outerHeight" min="100" max="300" value="200" class="w-32">
+                    <span id="outerValue">200px</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    中层高度: 
+                    <input type="range" id="middleHeight" min="50" max="100" value="85" class="w-32">
+                    <span id="middleValue">85%</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 场景对比 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 场景1：没有容器查询上下文 -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 text-red-600">❌ 场景1：无容器查询上下文</h3>
+                <div class="viewport-container relative p-4 rounded" style="height: 200px;">
+                    <div class="context-indicator context-viewport">视口容器</div>
+                    <div class="debug-info">视口: <span id="viewport1">200px</span></div>
+                    
+                    <div class="no-container relative p-2 rounded" style="height: 85%;">
+                        <div class="context-indicator context-none">无@container</div>
+                        <div class="debug-info">实际: <span id="middle1">170px</span></div>
+                        
+                        <div class="h-full flex items-center justify-center">
+                            <div class="orphan-card text-center" style="height: 80%; width: 80px;">
+                                <div class="text-xs font-bold mb-1">卡片</div>
+                                <div class="text-xs">80cqh</div>
+                                <div class="text-xs">基于视口?</div>
+                                <div class="text-xs mt-1">不确定!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-red-600">
+                    问题：cqh向上查找，可能基于视口容器(200px)而不是中层(170px)
+                </div>
+            </div>
+            
+            <!-- 场景2：只在中层设置容器查询 -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 text-yellow-600">⚠️ 场景2：只在中层设置</h3>
+                <div class="no-container relative p-4 rounded" style="height: 200px;">
+                    <div class="context-indicator context-none">无@container</div>
+                    <div class="debug-info">外层: <span id="outer2">200px</span></div>
+                    
+                    <div class="with-container relative p-2 rounded" style="height: 85%;">
+                        <div class="context-indicator context-local">有@container</div>
+                        <div class="debug-info">容器: <span id="middle2">170px</span></div>
+                        
+                        <div class="h-full flex items-center justify-center">
+                            <div class="demo-card text-center" style="height: 80%; width: 80px;">
+                                <div class="text-xs font-bold mb-1">卡片</div>
+                                <div class="text-xs">80cqh</div>
+                                <div class="text-xs">基于170px</div>
+                                <div class="text-xs mt-1">= <span id="card2">136px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-yellow-600">
+                    部分正确：cqh基于中层容器(170px)，但外层变化时可能不稳定
+                </div>
+            </div>
+            
+            <!-- 场景3：多层级容器查询 -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 text-green-600">✅ 场景3：多层级设置</h3>
+                <div class="with-container relative p-4 rounded" style="height: 200px;">
+                    <div class="context-indicator context-local">外层@container</div>
+                    <div class="debug-info">外层: <span id="outer3">200px</span></div>
+                    
+                    <div class="with-container relative p-2 rounded" style="height: 85%;">
+                        <div class="context-indicator context-local">内层@container</div>
+                        <div class="debug-info">容器: <span id="middle3">170px</span></div>
+                        
+                        <div class="h-full flex items-center justify-center">
+                            <div class="demo-card text-center" style="height: 80%; width: 80px;">
+                                <div class="text-xs font-bold mb-1">卡片</div>
+                                <div class="text-xs">80cqh</div>
+                                <div class="text-xs">基于170px</div>
+                                <div class="text-xs mt-1">= <span id="card3">136px</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-green-600">
+                    完美：每层都有明确的容器查询上下文，计算稳定可预测
+                </div>
+            </div>
+        </div>
+        
+        <!-- 查找机制说明 -->
+        <div class="bg-blue-50 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">🔍 cqh单位的查找机制</h3>
+            <div class="space-y-4">
+                <div class="bg-white p-4 rounded border-l-4 border-blue-500">
+                    <h4 class="font-semibold mb-2">1. 向上查找容器查询上下文</h4>
+                    <pre class="text-sm bg-gray-100 p-2 rounded"><code>element.style.height = "80cqh"
+↓
+查找最近的祖先元素具有 container-type 属性
+↓
+基于该祖先的尺寸计算 80%</code></pre>
+                </div>
+                
+                <div class="bg-white p-4 rounded border-l-4 border-yellow-500">
+                    <h4 class="font-semibold mb-2">2. 查找顺序</h4>
+                    <div class="text-sm space-y-1">
+                        <div>• 父元素 → 祖父元素 → 曾祖父元素 → ...</div>
+                        <div>• 直到找到 <code class="bg-gray-200 px-1 rounded">container-type: size | inline-size</code></div>
+                        <div>• 如果都没找到，可能基于初始包含块(视口)</div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded border-l-4 border-green-500">
+                    <h4 class="font-semibold mb-2">3. 为什么需要多层级？</h4>
+                    <div class="text-sm space-y-1">
+                        <div>• <strong>明确性</strong>：每层都有清晰的查询上下文</div>
+                        <div>• <strong>可预测性</strong>：不依赖意外的远程容器</div>
+                        <div>• <strong>稳定性</strong>：布局变化时计算基准不会跳跃</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 实际计算演示 -->
+        <div class="bg-gray-50 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold mb-4">🧮 实时计算演示</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-red-100 p-3 rounded">
+                    <h4 class="font-semibold text-red-700">场景1计算</h4>
+                    <div>80cqh 可能基于:</div>
+                    <div>• 视口: <span id="calc1a">200px</span> → <span id="result1a">160px</span></div>
+                    <div>• 或其他容器 (不确定)</div>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded">
+                    <h4 class="font-semibold text-yellow-700">场景2计算</h4>
+                    <div>80cqh 基于中层:</div>
+                    <div><span id="calc2">170px</span> × 80% = <span id="result2">136px</span></div>
+                </div>
+                <div class="bg-green-100 p-3 rounded">
+                    <h4 class="font-semibold text-green-700">场景3计算</h4>
+                    <div>80cqh 基于内层:</div>
+                    <div><span id="calc3">170px</span> × 80% = <span id="result3">136px</span></div>
+                    <div class="text-xs mt-1">(最稳定可靠)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const outerSlider = document.getElementById('outerHeight');
+        const middleSlider = document.getElementById('middleHeight');
+        const outerValue = document.getElementById('outerValue');
+        const middleValue = document.getElementById('middleValue');
+        
+        function updateDemo() {
+            const outerHeight = parseInt(outerSlider.value);
+            const middleRatio = parseInt(middleSlider.value);
+            const middleHeight = Math.round(outerHeight * middleRatio / 100);
+            const cardHeight = Math.round(middleHeight * 0.8);
+            
+            outerValue.textContent = outerHeight + 'px';
+            middleValue.textContent = middleRatio + '%';
+            
+            // 更新所有容器高度
+            document.querySelectorAll('[style*="height: 200px"]').forEach(el => {
+                el.style.height = outerHeight + 'px';
+            });
+            
+            document.querySelectorAll('[style*="height: 85%"]').forEach(el => {
+                el.style.height = middleRatio + '%';
+            });
+            
+            // 更新调试信息
+            document.getElementById('viewport1').textContent = outerHeight + 'px';
+            document.getElementById('middle1').textContent = middleHeight + 'px';
+            document.getElementById('outer2').textContent = outerHeight + 'px';
+            document.getElementById('middle2').textContent = middleHeight + 'px';
+            document.getElementById('card2').textContent = cardHeight + 'px';
+            document.getElementById('outer3').textContent = outerHeight + 'px';
+            document.getElementById('middle3').textContent = middleHeight + 'px';
+            document.getElementById('card3').textContent = cardHeight + 'px';
+            
+            // 更新计算演示
+            document.getElementById('calc1a').textContent = outerHeight + 'px';
+            document.getElementById('result1a').textContent = Math.round(outerHeight * 0.8) + 'px';
+            document.getElementById('calc2').textContent = middleHeight + 'px';
+            document.getElementById('result2').textContent = cardHeight + 'px';
+            document.getElementById('calc3').textContent = middleHeight + 'px';
+            document.getElementById('result3').textContent = cardHeight + 'px';
+        }
+        
+        outerSlider.addEventListener('input', updateDemo);
+        middleSlider.addEventListener('input', updateDemo);
+        
+        // 初始化
+        updateDemo();
+    </script>
+</body>
+</html>
