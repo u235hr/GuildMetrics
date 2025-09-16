@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @font-face {
   font-family: 'AlibabaPuHuiTi-3-55-Regular';
   src: url('/fonts/AlibabaPuHuiTi-3-55-Regular.ttf') format('truetype');
@@ -253,5 +252,20 @@
   100% {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@layer base {
+  .theme {
+    --animate-grid: grid 15s linear infinite;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+  body {
+    @apply bg-white dark:bg-black text-gray-900 dark:text-gray-100;
   }
 }

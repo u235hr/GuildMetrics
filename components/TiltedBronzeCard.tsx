@@ -56,24 +56,7 @@ export default function TiltedBronzeCard({
   const [lastY, setLastY] = useState(0);
 
   function handleMouse(e: React.MouseEvent<HTMLElement>) {
-    if (!ref.current) return;
-
-    const rect = ref.current.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left - rect.width / 2;
-    const offsetY = e.clientY - rect.top - rect.height / 2;
-
-    const rotationX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
-    const rotationY = (offsetX / (rect.width / 2)) * rotateAmplitude;
-
-    rotateX.set(rotationX);
-    rotateY.set(rotationY);
-
-    x.set(e.clientX - rect.left);
-    y.set(e.clientY - rect.top);
-
-    const velocityY = offsetY - lastY;
-    rotateFigcaption.set(-velocityY * 0.6);
-    setLastY(offsetY);
+    // 禁用hover效果
   }
 
   function handleMouseEnter() {
@@ -137,7 +120,7 @@ export default function TiltedBronzeCard({
         <ElectricBorder
           color="#CD7F32"
           speed={0.5}
-          chaos={0.2}
+          chaos={0.1}
           thickness={3}
           style={{ 
             position: 'absolute',

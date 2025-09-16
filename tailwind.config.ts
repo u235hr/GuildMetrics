@@ -12,6 +12,15 @@ const config: Config = {
         'alibaba-thin': ['AlibabaPuHuiTi-3-35-Thin', 'sans-serif'],
         'alibaba-reg': ['AlibabaPuHuiTi-3-35-Regular', 'sans-serif'],
       },
+      animation: {
+        'grid': 'grid 15s linear infinite',
+      },
+      keyframes: {
+        grid: {
+          '0%': { transform: 'translateY(-50%)' },
+          '100%': { transform: 'translateY(0%)' },
+        },
+      },
     },
   },
   plugins: [
