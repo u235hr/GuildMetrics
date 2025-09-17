@@ -2,10 +2,9 @@ import { useRef, useCallback, useEffect } from 'react';
 
 interface AnimationTask {
   id: string;
-  callback: (timestamp: number) => boolean; // 返回 true 继续，false 停止
-  priority: number; // 0-10，数字越大优先级越高
-  lastRun: number;
-  interval: number; // 最小间隔时间（毫秒）
+  callback: (deltaTime: number) => void;
+  priority: number;
+  interval: number;
 }
 
 class AnimationManager {
@@ -13,9 +12,11 @@ class AnimationManager {
   private tasks: Map<string, AnimationTask> = new Map();
   private isRunning = false;
   private animationId: number | null = null;
-  private lastFrameTime = 0;
-  private targetFPS = 60;
-  private frameInterval = 16.67; // 60 FPS
+  private lastTime = 0;
+  private frameCount = 0;
+  private lastFpsUpdate = 0;
+  private fps = 60;
+  private maxTasks = 20; // 限制最大任务数
 
   static getInstance(): AnimationManager {
     if (!AnimationManager.instance) {
@@ -24,16 +25,17 @@ class AnimationManager {
     return AnimationManager.instance;
   }
 
-  setTargetFPS(fps: number) {
-    this.targetFPS = Math.max(1, Math.min(fps, 120));
-    this.frameInterval = 1000 / this.targetFPS;
-  }
-
-  addTask(task: Omit<AnimationTask, 'lastRun'>) {
-    this.tasks.set(task.id, {
-      ...task,
-      lastRun: 0,
-    });
+  addTask(task: AnimationTask) {
+    // 防止任务积累
+    if (this.tasks.size >= this.maxTasks) {
+      const oldestKey = this.tasks.keys().next().value;
+      if (oldestKey) {
+        this.tasks.delete(oldestKey);
+        console.warn('Animation task limit reached, removed oldest task');
+      }
+    }
+    
+    this.tasks.set(task.id, task);
     
     if (!this.isRunning) {
       this.start();
@@ -52,7 +54,9 @@ class AnimationManager {
     if (this.isRunning) return;
     
     this.isRunning = true;
-    this.lastFrameTime = performance.now();
+    this.lastTime = performance.now();
+    this.lastFpsUpdate = this.lastTime;
+    this.frameCount = 0;
     this.loop();
   }
 
@@ -64,31 +68,38 @@ class AnimationManager {
     }
   }
 
-  private loop = () => {
+  loop = () => {
     if (!this.isRunning) return;
 
-    const currentTime = performance.now();
-    const deltaTime = currentTime - this.lastFrameTime;
+    const now = performance.now();
+    const deltaTime = now - this.lastTime;
+    this.lastTime = now;
 
-    // 帧率控制
-    if (deltaTime >= this.frameInterval) {
-      // 按优先级排序任务
-      const sortedTasks = Array.from(this.tasks.values()).sort((a, b) => b.priority - a.priority);
-      
-      for (const task of sortedTasks) {
-        // 检查任务间隔
-        if (currentTime - task.lastRun >= task.interval) {
-          const shouldContinue = task.callback(currentTime);
-          task.lastRun = currentTime;
-          
-          if (!shouldContinue) {
-            this.tasks.delete(task.id);
-          }
-        }
-      }
-
-      this.lastFrameTime = currentTime;
+    // Update FPS
+    this.frameCount++;
+    if (now - this.lastFpsUpdate >= 1000) {
+      this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate));
+      this.frameCount = 0;
+      this.lastFpsUpdate = now;
     }
+
+    // 安全执行任务
+    const tasksToRemove: string[] = [];
+    for (const [id, task] of this.tasks) {
+      if (task?.callback && typeof task.callback === 'function') {
+        try {
+          task.callback(deltaTime);
+        } catch (error) {
+          console.warn(`Animation task ${id} error:`, error);
+          tasksToRemove.push(id);
+        }
+      } else {
+        tasksToRemove.push(id);
+      }
+    }
+    
+    // 清理问题任务
+    tasksToRemove.forEach(id => this.tasks.delete(id));
 
     if (this.tasks.size > 0) {
       this.animationId = requestAnimationFrame(this.loop);
@@ -97,11 +108,15 @@ class AnimationManager {
     }
   };
 
+  getFPS() {
+    return this.fps;
+  }
+
   getStats() {
     return {
       taskCount: this.tasks.size,
       isRunning: this.isRunning,
-      targetFPS: this.targetFPS,
+      fps: this.fps,
     };
   }
 }
@@ -112,13 +127,13 @@ export function useAnimationManager() {
 
   const addAnimation = useCallback((
     id: string,
-    callback: (timestamp: number) => boolean,
+    callback: (deltaTime: number) => void,
     options: {
       priority?: number;
       interval?: number;
     } = {}
   ) => {
-    const task: Omit<AnimationTask, 'lastRun'> = {
+    const task: AnimationTask = {
       id,
       callback,
       priority: options.priority ?? 5,
@@ -134,15 +149,15 @@ export function useAnimationManager() {
     activeTasksRef.current.delete(id);
   }, []);
 
-  const setTargetFPS = useCallback((fps: number) => {
-    manager.current.setTargetFPS(fps);
+  const getFPS = useCallback(() => {
+    return manager.current.getFPS();
   }, []);
 
   const getStats = useCallback(() => {
     return manager.current.getStats();
   }, []);
 
-  // 组件卸载时清理所有任务
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       activeTasksRef.current.forEach(id => {
@@ -155,10 +170,68 @@ export function useAnimationManager() {
   return {
     addAnimation,
     removeAnimation,
-    setTargetFPS,
+    getFPS,
     getStats,
   };
 }
 
-// 注意：性能监控功能已移至 useSingleFPSSource.ts
-// 请使用 useSingleFPSSource 来获取FPS数据
+// Performance monitoring hook
+export function usePerformanceMonitor() {
+  const frameCount = useRef(0);
+  const lastTime = useRef(0);
+  const fpsHistory = useRef<number[]>([]);
+  const currentFPS = useRef(60);
+
+  const updateFPS = useCallback(() => {
+    frameCount.current++;
+    const now = performance.now();
+    
+    if (lastTime.current === 0) {
+      lastTime.current = now;
+      return currentFPS.current;
+    }
+    
+    const deltaTime = now - lastTime.current;
+    
+    if (deltaTime >= 1000) {
+      const fps = Math.round((frameCount.current * 1000) / deltaTime);
+      const validFPS = Math.max(1, Math.min(fps, 120));
+      currentFPS.current = validFPS;
+      
+      fpsHistory.current.push(validFPS);
+      if (fpsHistory.current.length > 60) {
+        fpsHistory.current.shift();
+      }
+      
+      frameCount.current = 0;
+      lastTime.current = now;
+      
+      return validFPS;
+    }
+    
+    return currentFPS.current;
+  }, []);
+
+  const getAverageFPS = useCallback(() => {
+    if (fpsHistory.current.length === 0) return 0;
+    return Math.round(fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length);
+  }, []);
+
+  const getMinFPS = useCallback(() => {
+    if (fpsHistory.current.length === 0) return 0;
+    return Math.min(...fpsHistory.current);
+  }, []);
+
+  const getMaxFPS = useCallback(() => {
+    if (fpsHistory.current.length === 0) return 0;
+    return Math.max(...fpsHistory.current);
+  }, []);
+
+  return {
+    updateFPS,
+    getAverageFPS,
+    getMinFPS,
+    getMaxFPS,
+    getFPSHistory: () => [...fpsHistory.current],
+  };
+}

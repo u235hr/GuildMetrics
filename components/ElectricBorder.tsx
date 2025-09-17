@@ -1,4 +1,5 @@
-import React, { CSSProperties, PropsWithChildren, useEffect, useId, useLayoutEffect, useRef } from 'react';
+import React, { CSSProperties, PropsWithChildren, useEffect, useId, useLayoutEffect, useRef, useCallback } from 'react';
+import { useRafOnce } from '@/hooks/useRafOnce';
 
 type ElectricBorderProps = PropsWithChildren<{
   color?: string;
@@ -39,68 +40,95 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const strokeRef = useRef<HTMLDivElement | null>(null);
+  const scheduleRaf = useRafOnce();
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const updateAnim = () => {
+  const updateAnim = useCallback(() => {
     const svg = svgRef.current;
     const host = rootRef.current;
     if (!svg || !host) return;
 
-    if (strokeRef.current) {
-      strokeRef.current.style.filter = `url(#${filterId})`;
+    // 防抖处理
+    if (updateTimerRef.current) {
+      clearTimeout(updateTimerRef.current);
     }
+    
+    updateTimerRef.current = setTimeout(() => {
+      if (strokeRef.current) {
+        strokeRef.current.style.filter = `url(#${filterId})`;
+      }
 
-    const width = Math.max(1, Math.round(host.clientWidth || host.getBoundingClientRect().width || 0));
-    const height = Math.max(1, Math.round(host.clientHeight || host.getBoundingClientRect().height || 0));
+      const width = Math.max(1, Math.round(host.clientWidth || host.getBoundingClientRect().width || 0));
+      const height = Math.max(1, Math.round(host.clientHeight || host.getBoundingClientRect().height || 0));
 
-    const dyAnims = Array.from(svg.querySelectorAll<SVGAnimateElement>('feOffset > animate[attributeName="dy"]'));
-    if (dyAnims.length >= 2) {
-      dyAnims[0].setAttribute('values', `${height}; 0`);
-      dyAnims[1].setAttribute('values', `0; -${height}`);
-    }
+      const dyAnims = Array.from(svg.querySelectorAll<SVGAnimateElement>('feOffset > animate[attributeName="dy"]'));
+      if (dyAnims.length >= 2) {
+        dyAnims[0].setAttribute('values', `${height}; 0`);
+        dyAnims[1].setAttribute('values', `0; -${height}`);
+      }
 
-    const dxAnims = Array.from(svg.querySelectorAll<SVGAnimateElement>('feOffset > animate[attributeName="dx"]'));
-    if (dxAnims.length >= 2) {
-      dxAnims[0].setAttribute('values', `${width}; 0`);
-      dxAnims[1].setAttribute('values', `0; -${width}`);
-    }
+      const dxAnims = Array.from(svg.querySelectorAll<SVGAnimateElement>('feOffset > animate[attributeName="dx"]'));
+      if (dxAnims.length >= 2) {
+        dxAnims[0].setAttribute('values', `${width}; 0`);
+        dxAnims[1].setAttribute('values', `0; -${width}`);
+      }
 
-    const baseDur = 6;
-    const dur = Math.max(0.001, baseDur / (speed || 1));
-    [...dyAnims, ...dxAnims].forEach(a => a.setAttribute('dur', `${dur}s`));
+      const baseDur = 6;
+      const dur = Math.max(0.001, baseDur / (speed || 1));
+      [...dyAnims, ...dxAnims].forEach(a => a.setAttribute('dur', `${dur}s`));
 
-    const disp = svg.querySelector('feDisplacementMap');
-    if (disp) disp.setAttribute('scale', String(30 * (chaos || 1)));
+      const disp = svg.querySelector('feDisplacementMap');
+      if (disp) disp.setAttribute('scale', String(30 * (chaos || 1)));
 
-    const filterEl = svg.querySelector<SVGFilterElement>(`#${CSS.escape(filterId)}`);
-    if (filterEl) {
-      filterEl.setAttribute('x', '-200%');
-      filterEl.setAttribute('y', '-200%');
-      filterEl.setAttribute('width', '500%');
-      filterEl.setAttribute('height', '500%');
-    }
+      const filterEl = svg.querySelector<SVGFilterElement>(`#${CSS.escape(filterId)}`);
+      if (filterEl) {
+        filterEl.setAttribute('x', '-200%');
+        filterEl.setAttribute('y', '-200%');
+        filterEl.setAttribute('width', '500%');
+        filterEl.setAttribute('height', '500%');
+      }
 
-    requestAnimationFrame(() => {
-      [...dyAnims, ...dxAnims].forEach((a: any) => {
-        if (typeof a.beginElement === 'function') {
-          try {
-            a.beginElement();
-          } catch {}
+      scheduleRaf(() => {
+        const anims = [...dyAnims, ...dxAnims];
+        for (const a of anims) {
+          if (typeof (a as any).beginElement === 'function') {
+            try {
+              (a as any).beginElement();
+            } catch {}
+          }
         }
       });
-    });
-  };
+    }, 16); // 16ms 防抖
+  }, [filterId, speed, chaos, scheduleRaf]);
 
   useEffect(() => {
     updateAnim();
-  }, [speed, chaos]);
+  }, [speed, chaos, updateAnim]);
 
   useLayoutEffect(() => {
     if (!rootRef.current) return;
-    const ro = new ResizeObserver(() => updateAnim());
-    ro.observe(rootRef.current);
+    
+    const element = rootRef.current;
+    
+    resizeObserverRef.current = new ResizeObserver(updateAnim);
+    resizeObserverRef.current.observe(element);
+    
     updateAnim();
-    return () => ro.disconnect();
-  }, []);
+    
+    return () => {
+      // 正确清理
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+      
+      if (updateTimerRef.current) {
+        clearTimeout(updateTimerRef.current);
+        updateTimerRef.current = null;
+      }
+    };
+  }, [updateAnim]);
 
   const inheritRadius: CSSProperties = {
     borderRadius: style?.borderRadius ?? 'inherit'

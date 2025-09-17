@@ -34,8 +34,14 @@ class GlobalPerformanceManager {
       return;
     }
 
-    // 只在开发环境运行
-    if (process.env.NODE_ENV !== 'development') {
+    // 禁用性能监控以减少高负载 - 只在明确需要时启动
+    if (process.env.NODE_ENV !== 'development' || process.env.DISABLE_PERF_MONITOR === 'true') {
+      return;
+    }
+
+    // 额外检查：避免过度监控
+    if (typeof window !== 'undefined' && (window as any).performanceManagerDisabled) {
+      console.log('Performance Manager disabled by flag');
       return;
     }
 

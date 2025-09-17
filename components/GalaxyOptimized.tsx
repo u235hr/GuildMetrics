@@ -1,6 +1,6 @@
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { usePerformanceLimiter, useWebGLOptimizer } from '@/hooks/usePerformanceLimiter';
+import { useAnimationManager } from '@/hooks/useAnimationManager';
 import { useSingleFPSSource } from '@/hooks/useSingleFPSSource';
 
 const vertexShader = `
@@ -188,60 +188,10 @@ interface GalaxyOptimizedProps {
   repulsionStrength?: number;
   autoCenterRepulsion?: number;
   transparent?: boolean;
-  // 新增性能控制参数
   maxFPS?: number;
   enableLOD?: boolean;
   pauseWhenHidden?: boolean;
   reducedMotion?: boolean;
-}
-
-// 性能管理器
-class GalaxyPerformanceManager {
-  private lastFrameTime = 0;
-  private frameInterval = 16.67; // 60 FPS
-  private isVisible = true;
-  private isActive = true;
-  private performanceLevel = 1; // 0: 低性能, 1: 中性能, 2: 高性能
-
-  constructor(maxFPS = 60) {
-    this.setMaxFPS(maxFPS);
-  }
-
-  setMaxFPS(fps: number) {
-    this.frameInterval = 1000 / Math.max(1, Math.min(fps, 120));
-  }
-
-  setVisibility(visible: boolean) {
-    this.isVisible = visible;
-  }
-
-  setActive(active: boolean) {
-    this.isActive = active;
-  }
-
-  shouldRender(currentTime: number): boolean {
-    if (!this.isVisible || !this.isActive) return false;
-    
-    if (currentTime - this.lastFrameTime >= this.frameInterval) {
-      this.lastFrameTime = currentTime;
-      return true;
-    }
-    return false;
-  }
-
-  getPerformanceLevel(): number {
-    return this.performanceLevel;
-  }
-
-  updatePerformanceLevel(fps: number) {
-    if (fps < 30) {
-      this.performanceLevel = 0; // 低性能
-    } else if (fps < 50) {
-      this.performanceLevel = 1; // 中性能
-    } else {
-      this.performanceLevel = 2; // 高性能
-    }
-  }
 }
 
 export default function GalaxyOptimized({
@@ -272,10 +222,11 @@ export default function GalaxyOptimized({
   const smoothMousePos = useRef({ x: 0.5, y: 0.5 });
   const targetMouseActive = useRef(0.0);
   const smoothMouseActive = useRef(0.0);
-  const performanceManager = useRef<GalaxyPerformanceManager>(new GalaxyPerformanceManager());
   const intersectionObserver = useRef<IntersectionObserver | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const { currentFPS } = useSingleFPSSource();
+  const { addAnimation, removeAnimation } = useAnimationManager();
+  const animationId = 'galaxy-animation';
 
   // Visibility detection
   useEffect(() => {
@@ -285,7 +236,6 @@ export default function GalaxyOptimized({
       (entries) => {
         const isIntersecting = entries[0].isIntersecting;
         setIsVisible(isIntersecting);
-        performanceManager.current?.setVisibility(isIntersecting);
       },
       { threshold: 0.1 }
     );
@@ -298,48 +248,30 @@ export default function GalaxyOptimized({
   }, [pauseWhenHidden]);
 
   // Detect user preference settings
+  const [isMotionReduced, setIsMotionReduced] = useState(false);
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setIsMotionReduced(mediaQuery.matches);
     const handleChange = () => {
-      performanceManager.current?.setActive(!mediaQuery.matches);
+      setIsMotionReduced(mediaQuery.matches);
     };
     
     mediaQuery.addEventListener('change', handleChange);
-    handleChange();
-
     return () => {
       mediaQuery.removeEventListener('change', handleChange);
     };
-  }, []);
-
-  // 内存清理机制
-  useEffect(() => {
-    const cleanup = () => {
-      if (typeof window !== 'undefined' && 'gc' in window) {
-        (window as any).gc();
-      }
-    };
-
-    // 每30秒清理一次内存
-    const interval = setInterval(cleanup, 30000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (!ctnDom.current) return;
     const ctn = ctnDom.current;
     
-    // Prevent duplicate WebGL context creation
     if (ctn.querySelector('canvas')) return;
-    
-    // Initialize performance manager
-    performanceManager.current = new GalaxyPerformanceManager(maxFPS);
     
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false,
-      antialias: !enableLOD, // LOD模式下禁用抗锯齿以提升性能
+      antialias: !enableLOD,
       powerPreference: 'high-performance'
     });
     const gl = renderer.gl;
@@ -355,7 +287,7 @@ export default function GalaxyOptimized({
     let program: Program;
 
     function resize() {
-      const scale = enableLOD ? 0.8 : 1; // Lower render resolution in LOD mode
+      const scale = enableLOD ? 0.8 : 1;
       renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
       if (program) {
         program.uniforms.uResolution.value = new Color(
@@ -401,49 +333,19 @@ export default function GalaxyOptimized({
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    let animateId: number;
-    
-    // FPS计算变量
-    let frameCount = 0;
-    let lastFpsTime = performance.now();
-    let lastFrameTime = performance.now();
+    let totalTime = 0;
 
-    function update(t: number) {
-      // 性能控制
-      if (!performanceManager.current?.shouldRender(t)) {
-        // 初始化时间变量
-    const startTime = performance.now();
-    lastFpsTime = startTime;
-    lastFrameTime = startTime;
-    
-    animateId = requestAnimationFrame(update);
-        return;
-      }
+    const update = (deltaTime: number) => {
+      totalTime += deltaTime;
+      const t = totalTime;
 
-      // 计算FPS
-      frameCount++;
-      if (t - lastFpsTime >= 1000) {
-        const realFPS = Math.round((frameCount * 1000) / (t - lastFpsTime));
-        // FPS is now managed by useSingleFPSSource hook
-        frameCount = 0;
-        lastFpsTime = t;
-      }
-
-      if (!disableAnimation && !reducedMotion) {
-        // 检查FPS限制，如果FPS过低则跳过动画更新
-        if (currentFPS < 30) {
-          animateId = requestAnimationFrame(update);
-          return;
-        }
-        
-        // 根据性能等级调整动画参数
-        const performanceLevel = performanceManager.current?.getPerformanceLevel() ?? 1;
+      if (!disableAnimation && !reducedMotion && !isMotionReduced) {
+        const performanceLevel = currentFPS < 30 ? 0 : currentFPS < 50 ? 1 : 2;
         const speedMultiplier = performanceLevel === 0 ? 0.5 : performanceLevel === 2 ? 1.2 : 1.0;
         
         program.uniforms.uTime.value = t * 0.001;
         program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed * speedMultiplier) / 10.0;
         
-        // 根据性能调整密度
         const adaptiveDensity = enableLOD ? density * (0.5 + performanceLevel * 0.25) : density;
         program.uniforms.uDensity.value = adaptiveDensity;
       }
@@ -451,7 +353,6 @@ export default function GalaxyOptimized({
       const lerpFactor = 0.05;
       smoothMousePos.current.x += (targetMousePos.current.x - smoothMousePos.current.x) * lerpFactor;
       smoothMousePos.current.y += (targetMousePos.current.y - smoothMousePos.current.y) * lerpFactor;
-
       smoothMouseActive.current += (targetMouseActive.current - smoothMouseActive.current) * lerpFactor;
 
       program.uniforms.uMouse.value[0] = smoothMousePos.current.x;
@@ -459,10 +360,12 @@ export default function GalaxyOptimized({
       program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
 
       renderer.render({ scene: mesh });
-      animateId = requestAnimationFrame(update);
-    }
+    };
 
-    animateId = requestAnimationFrame(update);
+    if (isVisible) {
+      addAnimation(animationId, update);
+    }
+    
     ctn.appendChild(gl.canvas);
 
     function handleMouseMove(e: MouseEvent) {
@@ -483,18 +386,16 @@ export default function GalaxyOptimized({
     }
 
     return () => {
-      cancelAnimationFrame(animateId);
+      removeAnimation(animationId);
       resizeObserver.disconnect();
       if (mouseInteraction) {
         ctn.removeEventListener('mousemove', handleMouseMove);
         ctn.removeEventListener('mouseleave', handleMouseLeave);
       }
-      // Safely remove canvas
       const canvas = ctn.querySelector('canvas');
       if (canvas && canvas.parentNode) {
         canvas.parentNode.removeChild(canvas);
       }
-      // Delayed WebGL context cleanup to avoid flicker during animation
       setTimeout(() => {
         try {
           gl.getExtension('WEBGL_lose_context')?.loseContext();
@@ -504,12 +405,12 @@ export default function GalaxyOptimized({
       }, 100);
     };
   }, [
-    // Only keep dependencies that truly need WebGL context recreation
     transparent,
     mouseInteraction,
-    maxFPS,
     enableLOD,
-    reducedMotion
+    reducedMotion,
+    isVisible, // Re-run effect when visibility changes
+    isMotionReduced
   ]);
 
   return (

@@ -2,37 +2,33 @@
 
 import { useEffect, useState } from 'react';
 import { getRankingData, RankingData } from '@/utils/dataLoader';
-import Top3Container from '@/components/Top3Container';
-import RestRankingList from '@/components/RestRankingList';
+import Top3Container from '@/components/pages/ranking/Top3Container';
+import RestRankingList from '@/components/pages/ranking/RestRankingList';
 
 export default function RankingPage() {
-  const [rankingData, setRankingData] = useState<RankingData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        console.log('Starting to load ranking data...');
-        const data = await getRankingData('june');
-        console.log('Loaded ranking data:', data);
-        setRankingData(data);
-      } catch (error) {
-        console.error('Failed to load ranking data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className='h-full flex items-center justify-center'>
-        <div className='text-white text-xl'>Loading...</div>
-      </div>
-    );
-  }
+  // 扩展排名数据，提供更多测试数据
+  const rankingData: RankingData[] = [
+    { rank: 1, name: '宝儿', coins: 836669 },
+    { rank: 2, name: '雪儿', coins: 797145 },
+    { rank: 3, name: '小美', coins: 654321 },
+    { rank: 4, name: '小红', coins: 543210 },
+    { rank: 5, name: '小明', coins: 432109 },
+    { rank: 6, name: '小丽', coins: 398765 },
+    { rank: 7, name: '小强', coins: 356789 },
+    { rank: 8, name: '小华', coins: 298456 },
+    { rank: 9, name: '小芳', coins: 267890 },
+    { rank: 10, name: '小刚', coins: 234567 },
+    { rank: 11, name: '小梅', coins: 198234 },
+    { rank: 12, name: '小军', coins: 167543 },
+    { rank: 13, name: '小燕', coins: 145678 },
+    { rank: 14, name: '小波', coins: 123456 },
+    { rank: 15, name: '小琳', coins: 98765 },
+    { rank: 16, name: '小东', coins: 87654 },
+    { rank: 17, name: '小西', coins: 76543 },
+    { rank: 18, name: '小南', coins: 65432 },
+    { rank: 19, name: '小北', coins: 54321 },
+    { rank: 20, name: '小中', coins: 43210 }
+  ];
 
   // 准备Top3数据
   const top3Data = {
@@ -54,19 +50,33 @@ export default function RankingPage() {
   };
 
   // 准备剩余排名数据（从第4名开始）
-  const restRankingData = rankingData.slice(3).map((item, index) => ({
-    rank: index + 4, // 从第4名开始
-    name: item.name,
-    coinAmount: item.coins,
-    // 模拟环比数据（相对于上个月的变化百分比）
-    monthOverMonth: Math.random() > 0.3 ? (Math.random() - 0.5) * 40 : undefined,
-    // 模拟同比数据（相对于去年同期的变化百分比）
-    yearOverYear: Math.random() > 0.2 ? (Math.random() - 0.5) * 60 : undefined,
-    // 模拟直播时长数据（小时）
-    liveDuration: Math.random() > 0.1 ? Math.random() * 200 : undefined
-  }));
+  const restRankingData = rankingData.slice(3).map((item, index) => {
+    // 使用确定性算法生成数据，避免SSR水合错误
+    const seed = item.rank * 137.5; // 使用rank作为种子
+    const monthOverMonthSeed = (seed * 1.618) % 1; // 黄金比例
+    const yearOverYearSeed = (seed * 2.718) % 1; // 自然对数
+    const liveDurationSeed = (seed * 3.141) % 1; // 圆周率
+    
+    return {
+      rank: item.rank, // 使用原始rank，不要重新计算
+      name: item.name,
+      coinAmount: item.coins,
+      // 模拟环比数据（相对于上个月的变化百分比）
+      monthOverMonth: monthOverMonthSeed > 0.3 ? (monthOverMonthSeed - 0.5) * 40 : undefined,
+      // 模拟同比数据（相对于去年同期的变化百分比）
+      yearOverYear: yearOverYearSeed > 0.2 ? (yearOverYearSeed - 0.5) * 60 : undefined,
+      // 模拟直播时长数据（小时）
+      liveDuration: liveDurationSeed > 0.1 ? liveDurationSeed * 200 : undefined
+    };
+  });
 
-  const THRESHOLD_VALUE = 5000; // 币量门槛值
+  console.log('📋 RestRankingList data:', {
+    count: restRankingData.length,
+    firstItem: restRankingData[0],
+    lastItem: restRankingData[restRankingData.length - 1]
+  });
+
+  const THRESHOLD_VALUE = 100000; // 调整门槛值到合理范围
   const LIVE_DURATION_THRESHOLD = 100; // 直播时长门槛值（小时）
 
   return (

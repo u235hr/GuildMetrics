@@ -10,115 +10,69 @@ interface GlobalPerformanceMonitorOptimizedProps {
   logInterval?: number;
   showConsoleLog?: boolean;
   showVisualIndicator?: boolean;
-  maxLogEntries?: number;
-  enableAutoThrottling?: boolean;
-  fpsThreshold?: number;
-  memoryThreshold?: number; // MB
 }
 
 export const GlobalPerformanceMonitorOptimized: React.FC<GlobalPerformanceMonitorOptimizedProps> = ({
   enabled = process.env.NODE_ENV === 'development',
-  logInterval = 5000, // 增加到5秒，减少日志频率
+  logInterval = 2000, // 2 seconds for a reasonable refresh rate
   showConsoleLog = process.env.NODE_ENV === 'development',
   showVisualIndicator = process.env.NODE_ENV === 'development',
-  maxLogEntries = 50,
-  enableAutoThrottling = true,
-  fpsThreshold = 30,
-  memoryThreshold = 100
 }) => {
-  const { data, updateFps, updateFrameTime, updateMemoryUsage, updateWiggle } = usePerformanceStore();
-  const { currentFPS, getAverageFPS, getMinFPS } = useSingleFPSSource();
+  const { data, updateMetrics } = usePerformanceStore();
+  const { currentFPS } = useSingleFPSSource();
   
   const [performanceLevel, setPerformanceLevel] = useState<'high' | 'medium' | 'low'>('high');
-  const [isThrottled, setIsThrottled] = useState(false);
   const lastLogTime = useRef(0);
-  const performanceHistory = useRef<number[]>([]);
 
+  const fpsThreshold = 30;
+  const memoryThreshold = 150; // MB
 
-  // Auto throttling control
-  const applyAutoThrottling = (level: 'high' | 'medium' | 'low') => {
-    if (!enableAutoThrottling) return;
-
-    switch (level) {
-      case 'low':
-        setIsThrottled(true);
-        break;
-      case 'medium':
-        setIsThrottled(true);
-        break;
-      case 'high':
-        setIsThrottled(false);
-        break;
-    }
-  };
-
-  // 使用统一的内存检测函数
-  const getMemoryInfo = () => getMemoryUsage();
-
-  // 简化的性能等级检测
   const checkPerformanceLevel = useCallback((fps: number, memory: number) => {
     if (fps < fpsThreshold || memory > memoryThreshold) return 'low';
-    if (fps < fpsThreshold * 1.5 || memory > memoryThreshold * 0.8) return 'medium';
+    if (fps < 50 || memory > memoryThreshold * 0.8) return 'medium';
     return 'high';
   }, [fpsThreshold, memoryThreshold]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    // 防止重复启动
-    if (lastLogTime.current > 0) return;
-    
-    console.log('Performance Monitor Started');
-    lastLogTime.current = performance.now();
-
     const intervalId = setInterval(() => {
       try {
-        const now = performance.now();
-        
-        // 避免过于频繁的更新
-        if (now - lastLogTime.current < logInterval) return;
-        lastLogTime.current = now;
+        const memoryInfo = getMemoryUsage();
+        const frameTime = currentFPS > 0 ? (1000 / currentFPS) : 0;
 
-        const memoryInfo = getMemoryInfo();
-        const frameTime = currentFPS > 0 ? (1000 / currentFPS) : 16.67;
-        
-        // 只在数据变化时更新状态
-        if (data.fps !== currentFPS) updateFps(currentFPS);
-        if (data.memoryUsage !== memoryInfo.used) updateMemoryUsage(memoryInfo.used);
-        if (data.frameTime !== frameTime) updateFrameTime(frameTime);
+        // Use the unified updateMetrics function from the store
+        updateMetrics({
+          fps: currentFPS,
+          frameTime: frameTime,
+          memory: memoryInfo.used,
+        });
 
-        // 检测性能等级
         const newLevel = checkPerformanceLevel(currentFPS, memoryInfo.used);
         if (newLevel !== performanceLevel) {
           setPerformanceLevel(newLevel);
-          applyAutoThrottling(newLevel);
         }
 
-        // 记录性能历史（简化）
-        performanceHistory.current.push(currentFPS);
-        if (performanceHistory.current.length > 10) {
-          performanceHistory.current.shift();
+        if (showConsoleLog) {
+          const now = performance.now();
+          if (now - lastLogTime.current > logInterval) {
+            const status = newLevel === 'high' ? '🟢' : newLevel === 'medium' ? '🟡' : '🔴';
+            console.log(`${status} ${currentFPS}fps | ${memoryInfo.used}MB | ${newLevel.toUpperCase()}`);
+            lastLogTime.current = now;
+          }
         }
-
-      // 控制台输出（极简格式）
-      if (showConsoleLog) {
-        const status = newLevel === 'high' ? '🟢' : newLevel === 'medium' ? '🟡' : '🔴';
-        const limitedFPS = Math.min(currentFPS, 60); // 确保显示不超过60fps
-        console.log(`${status} ${limitedFPS}fps | ${memoryInfo.used}MB | ${newLevel.toUpperCase()}`);
-      }
       } catch (error) {
-        // 静默处理错误，避免影响应用运行
         console.warn('Performance monitor error:', error);
       }
-    }, logInterval);
+    }, 500); // Update metrics store frequently, log less frequently
+
+    console.log('Performance Monitor Started');
 
     return () => {
       clearInterval(intervalId);
-      lastLogTime.current = 0; // 重置状态，允许重新启动
     };
-  }, [enabled, logInterval, showConsoleLog]); // 只保留必要的依赖项，避免重复启动
+  }, [enabled, logInterval, showConsoleLog, updateMetrics, checkPerformanceLevel, performanceLevel, currentFPS]);
 
-  // 可视化性能指示器
   if (!showVisualIndicator || !enabled) {
     return null;
   }
@@ -132,22 +86,12 @@ export const GlobalPerformanceMonitorOptimized: React.FC<GlobalPerformanceMonito
     }
   };
 
-  const getIndicatorText = () => {
-    return `${data.fps}fps ${data.memoryUsage.toFixed(0)}MB ${performanceLevel.toUpperCase()}`;
-  };
-
   return (
     <div className="fixed top-4 right-4 z-50 pointer-events-none">
-      <div className={`
-        px-3 py-2 rounded-lg text-white text-xs font-mono
-        ${getIndicatorColor()}
-        transition-all duration-300
-        ${isThrottled ? 'animate-pulse' : ''}
-      `}>
+      <div className={`px-3 py-2 rounded-lg text-white text-xs font-mono ${getIndicatorColor()} transition-all duration-300`}>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-          <span>{getIndicatorText()}</span>
-          {isThrottled && <span className="text-xs">🔄</span>}
+          <span>{`${data.fps}fps ${data.memoryUsage.toFixed(0)}MB`}</span>
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import TiltedGoldCard from './TiltedGoldCard';
 import TiltedSilverCard from './TiltedSilverCard';
 import TiltedBronzeCard from './TiltedBronzeCard';
-import { RetroGrid } from './ui/retro-grid';
-import ElectricBorder from './ElectricBorder';
+import ElectricBorder from '../../ElectricBorder';
+import { useAnimationManager } from '../../../hooks/useAnimationManager';
 
-interface Top3ContainerProps {
+interface Top3ContainerOptimizedProps {
   data: {
     gold: { name: string; value: string; avatar: string };
     silver: { name: string; value: string; avatar: string };
@@ -14,7 +14,7 @@ interface Top3ContainerProps {
   };
 }
 
-export default function Top3Container({ data }: Top3ContainerProps) {
+export default function Top3ContainerOptimized({ data }: Top3ContainerOptimizedProps) {
   const [showSilver, setShowSilver] = useState(false);
   const [showBronze, setShowBronze] = useState(false);
   const [showGold, setShowGold] = useState(false);
@@ -26,35 +26,140 @@ export default function Top3Container({ data }: Top3ContainerProps) {
   const [showSilverValue, setShowSilverValue] = useState(false);
   const [showBronzeValue, setShowBronzeValue] = useState(false);
 
-  // 移除wiggle同步逻辑
-
-  // ========== 三个卡片之间的动画衔接逻辑 ==========
-  // 卡片顺序出现动画 - 性能优化版本
-  useEffect(() => {
-    let isMounted = true;
-    let animationFrameId: number;
-    let timeoutIds: NodeJS.Timeout[] = [];
+  const { addAnimation, removeAnimation } = useAnimationManager();
+  const animationStateRef = useRef({
+    isMounted: true,
+    currentStep: 0,
+    startTime: 0,
+  });
+  
+  // 定时器管理
+  const timersRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  
+  const safeSetTimeout = useCallback((callback: () => void, delay: number) => {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      callback();
+    }, delay);
     
-    const startSequentialAnimation = async () => {
-      try {
-        // ========== 动画衔接第0步：初始化所有状态 ==========
-        // 确保所有状态都重置为初始状态
-        setShowSilver(false);
-        setShowBronze(false);
-        setShowGold(false);
-        setGoldCanExpand(false);
-        setSilverMoveUp(false);
-        setBronzeMoveUp(false);
-        setShowSilverValue(false);
-        setShowBronzeValue(false);
+    timersRef.current.add(timer);
+    return timer;
+  }, []);
+  
+  // 清理所有定时器
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(timer => clearTimeout(timer));
+      timersRef.current.clear();
+    };
+  }, []);
 
-        // 使用 requestAnimationFrame 优化性能
-        const waitForFrame = () => new Promise(resolve => {
-          animationFrameId = requestAnimationFrame(resolve);
+  // 优化的动画序列管理
+  const animationSteps = [
+    { delay: 200, action: () => setShowSilver(true) },
+    { delay: 500, action: () => setShowBronze(true) },
+    { delay: 500, action: () => setShowGold(true) },
+    { delay: 500, action: () => {
+      setSilverMoveUp(true);
+      setShowSilverValue(true);
+      setBronzeMoveUp(true);
+      setShowBronzeValue(true);
+    }},
+    { delay: 200, action: () => setGoldCanExpand(true) },
+  ];
+
+  // 统一的动画序列执行器
+  const executeAnimationSequence = () => {
+    if (!animationStateRef.current.isMounted) return;
+
+    console.log('Starting optimized card sequence animation');
+    
+    // 重置所有状态
+    setShowSilver(false);
+    setShowBronze(false);
+    setShowGold(false);
+    setGoldCanExpand(false);
+    setSilverMoveUp(false);
+    setBronzeMoveUp(false);
+    setShowSilverValue(false);
+    setShowBronzeValue(false);
+
+    animationStateRef.current.currentStep = 0;
+    animationStateRef.current.startTime = performance.now();
+
+    // 添加动画任务到统一管理器
+    addAnimation(
+      'card-sequence-animation',
+      (timestamp) => {
+        const { currentStep, startTime } = animationStateRef.current;
+        const elapsed = timestamp - startTime;
+        
+        // 计算累积延迟
+        let cumulativeDelay = 300; // 初始延迟
+        for (let i = 0; i < currentStep; i++) {
+          cumulativeDelay += animationSteps[i].delay;
+        }
+
+        // 检查是否到达当前步骤的执行时间
+        if (elapsed >= cumulativeDelay && currentStep < animationSteps.length) {
+          if (animationStateRef.current.isMounted) {
+            animationSteps[currentStep].action();
+            animationStateRef.current.currentStep++;
+          }
+        }
+
+        // 检查是否完成所有步骤
+        if (currentStep >= animationSteps.length) {
+          console.log('Card sequence animation completed');
+          return false; // 停止动画
+        }
+
+        return animationStateRef.current.isMounted; // 继续动画
+      },
+      {
+        priority: 8, // 高优先级
+        interval: 16, // 每帧检查
+      }
+    );
+  };
+
+  // 资源预加载优化
+  const preloadResources = async (): Promise<boolean> => {
+    try {
+      const imagePromises = [
+        data.gold.avatar,
+        data.silver.avatar,
+        data.bronze.avatar
+      ].map(src => {
+        return new Promise<boolean>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = src;
         });
+      });
 
-        // ========== 动画衔接第1步：等待页面完全加载 ==========
-        // 等待页面完全加载和DOM稳定
+      const fontPromise = document.fonts.ready;
+      const [goldLoaded, silverLoaded, bronzeLoaded] = await Promise.all([
+        ...imagePromises,
+        fontPromise
+      ]);
+
+      return Boolean(goldLoaded) && Boolean(silverLoaded) && Boolean(bronzeLoaded);
+    } catch (error) {
+      console.warn('Resource preload failed:', error);
+      return true; // 继续执行，避免阻塞
+    }
+  };
+
+  // 启动动画序列
+  useEffect(() => {
+    let mounted = true;
+    animationStateRef.current.isMounted = true;
+
+    const startAnimation = async () => {
+      try {
+        // 等待页面完全加载
         if (document.readyState !== 'complete') {
           await new Promise(resolve => {
             const handleLoad = () => {
@@ -65,100 +170,40 @@ export default function Top3Container({ data }: Top3ContainerProps) {
           });
         }
 
+        if (!mounted) return;
+
+        // 预加载资源
+        console.log('Starting resource preload...');
+        const resourcesReady = await preloadResources();
+        
+        if (!resourcesReady) {
+          console.warn('Some resources failed to load, but continuing animation');
+        }
+
+        if (!mounted) return;
+
         // 等待DOM稳定
-        await waitForFrame();
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 200);
-          timeoutIds.push(timeoutId);
-        });
+        await new Promise(resolve => safeSetTimeout(() => resolve(undefined), 100));
 
-        if (!isMounted) return;
-
-        // ========== 动画衔接第2步：银卡出现 ==========
-        // 银卡先出现 - 优化时序
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 300);
-          timeoutIds.push(timeoutId);
-        });
-        
-        if (!isMounted) return;
-        setShowSilver(true);
-        
-        // ========== 动画衔接第3步：银卡稳定等待 ==========
-        // 等待银卡完全显示和稳定
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 500);
-          timeoutIds.push(timeoutId);
-        });
-
-        if (!isMounted) return;
-
-        // ========== 动画衔接第4步：铜卡出现 ==========
-        // 铜卡出现
-        setShowBronze(true);
-        // ========== 动画衔接第5步：铜卡稳定等待 ==========
-        // 等待铜卡完全显示和稳定
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 500);
-          timeoutIds.push(timeoutId);
-        });
-
-        if (!isMounted) return;
-
-        // ========== 动画衔接第6步：金卡出现 ==========
-        // 金卡出现
-        setShowGold(true);
-        // ========== 动画衔接第7步：金卡稳定等待 ==========
-        // 等待金卡完全显示和稳定
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 500);
-          timeoutIds.push(timeoutId);
-        });
-
-        if (!isMounted) return;
-
-        // ========== 动画衔接第8步：银卡和铜卡向上移动 ==========
-        // 银卡和铜卡同时向上移动并显示礼物值
-        setSilverMoveUp(true);
-        setShowSilverValue(true);
-        setBronzeMoveUp(true);
-        setShowBronzeValue(true);
-        
-        // ========== 动画衔接第9步：等待银卡铜卡移动完成 ==========
-        // 等待银卡和铜卡的向上移动动画完成
-        await new Promise(resolve => {
-          const timeoutId = setTimeout(resolve, 200);
-          timeoutIds.push(timeoutId);
-        });
-
-        if (!isMounted) return;
-
-        // ========== 动画衔接第10步：触发金卡展开 ==========
-        // 允许金卡开始展开动画
-        setGoldCanExpand(true);
+        if (mounted) {
+          executeAnimationSequence();
+        }
       } catch (error) {
-        console.error('Card sequence animation failed:', error);
+        console.error('Animation startup failed:', error);
       }
     };
 
-    startSequentialAnimation();
+    startAnimation();
 
     return () => {
-      isMounted = false;
-      // 清理所有定时器和动画帧
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      timeoutIds.forEach(id => clearTimeout(id));
+      mounted = false;
+      animationStateRef.current.isMounted = false;
+      removeAnimation('card-sequence-animation');
     };
-  }, []);
+  }, [addAnimation, removeAnimation, data]);
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* RetroGrid背景 - 高性能CSS网格动画 */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <RetroGrid />
-      </div>
       
       {/* 主要内容 */}
       <div 
@@ -183,15 +228,11 @@ export default function Top3Container({ data }: Top3ContainerProps) {
           <TiltedSilverCard
             imageSrc={data.silver.avatar || '/avatars/外国女人头像3_未抠图.jpg'}
             altText={data.silver.name || '银牌得主'}
-            captionText={data.silver.name || '银牌得主'}
             containerHeight="20vh"
             containerWidth="20vh"
             imageHeight="20vh"
             imageWidth="20vh"
-            rotateAmplitude={12}
-            scaleOnHover={1.2}
             showMobileWarning={false}
-            showTooltip={false}
             displayOverlayContent={true}
           overlayContent={
             <p style={{
@@ -227,8 +268,8 @@ export default function Top3Container({ data }: Top3ContainerProps) {
                 left: '50%',
                 transform: 'translateX(-50%)',
                 marginTop: '1vh',
-                height: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数框高度 = 卡片宽度的20%
-                width: 'calc(var(--card-width, 20vh) * 0.8)',   // 分数框宽度 = 卡片宽度的80%
+                height: 'calc(var(--card-width, 20vh) * 0.2)',
+                width: 'calc(var(--card-width, 20vh) * 0.8)',
                 background: 'linear-gradient(135deg, rgb(192, 192, 192), rgb(169, 169, 169))',
                 color: 'rgb(255, 255, 255)',
                 padding: '0.5vh 1vh',
@@ -253,12 +294,12 @@ export default function Top3Container({ data }: Top3ContainerProps) {
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                   position: 'absolute',
-                  left: '10px', // 可以调左右位置
-                  top: 'calc(var(--card-width, 9vh) * 0.03)',   // 上边距 = 卡片宽度的3.3%
-                  width: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数图标宽度 = 卡片宽度的20%
-                  height: 'calc(var(--card-width, 20vh) * 0.2)' // 分数图标高度 = 卡片宽度的20%
+                  left: '10px',
+                  top: 'calc(var(--card-width, 9vh) * 0.03)',
+                  width: 'calc(var(--card-width, 20vh) * 0.2)',
+                  height: 'calc(var(--card-width, 20vh) * 0.2)'
                 }}
-              >jian'hao'le
+              >
                 <path
                   d="M382.6 805H242.2c-6.7 0-12.2-5.5-12.2-12.2V434.3c0-6.7 5.5-12.2 12.2-12.2h140.4c6.7 0 12.2 5.5 12.2 12.2v358.6c0 6.6-5.4 12.1-12.1 12.1z"
                   fill="#ea9518"
@@ -275,13 +316,13 @@ export default function Top3Container({ data }: Top3ContainerProps) {
               <p 
                 className="silver-grades-box-num"
                 style={{
-                  fontSize: 'calc(var(--card-width, 20vh) * 0.10)', // 分数数字 = 卡片宽度的10% (比金卡小一号)
+                  fontSize: 'calc(var(--card-width, 20vh) * 0.10)',
                   fontFamily: 'AlibabaPuHuiTi-3-55-Regular',
-                  marginLeft: 'calc(var(--card-width, 20vh) * 0.17)', // 左边距 = 卡片宽度的17%
-                  marginTop: 'calc(var(--card-width, 20vh) * 0.0)', // 上边距 = 卡片宽度的0% (和金卡一样)
+                  marginLeft: 'calc(var(--card-width, 20vh) * 0.17)',
+                  marginTop: 'calc(var(--card-width, 20vh) * 0.0)',
                   textAlign: 'center',
-                  width: 'calc(var(--card-width, 20vh) * 0.6)', // 宽度 = 卡片宽度的60%
-                  height: 'calc(var(--card-width, 20vh) * 0.2)', // 高度 = 卡片宽度的20% (和金卡一样)
+                  width: 'calc(var(--card-width, 20vh) * 0.6)',
+                  height: 'calc(var(--card-width, 20vh) * 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -306,15 +347,11 @@ export default function Top3Container({ data }: Top3ContainerProps) {
           <TiltedGoldCard
           imageSrc={data.gold.avatar || '/avatars/外国女人头像1_未抠图.jpeg'}
           altText={data.gold.name || '金牌得主'}
-          captionText={data.gold.name || '金牌得主'}
           containerHeight="20vh"
           containerWidth="20vh"
           imageHeight="20vh"
           imageWidth="20vh"
-          rotateAmplitude={14}
-          scaleOnHover={1.25}
           showMobileWarning={false}
-          showTooltip={false}
           displayOverlayContent={true}
           showExpandedCard={true}
           goldCanExpand={goldCanExpand}
@@ -361,15 +398,11 @@ export default function Top3Container({ data }: Top3ContainerProps) {
           <TiltedBronzeCard
           imageSrc={data.bronze.avatar || '/avatars/外国女人头像2_未抠图.jpg'}
           altText={data.bronze.name || '铜牌得主'}
-          captionText={data.bronze.name || '铜牌得主'}
           containerHeight="20vh"
           containerWidth="20vh"
           imageHeight="20vh"
           imageWidth="20vh"
-          rotateAmplitude={12}
-          scaleOnHover={1.2}
           showMobileWarning={false}
-          showTooltip={false}
           displayOverlayContent={true}
           overlayContent={
             <p style={{
@@ -405,8 +438,8 @@ export default function Top3Container({ data }: Top3ContainerProps) {
                 left: '50%',
                 transform: 'translateX(-50%)',
                 marginTop: '1vh',
-                height: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数框高度 = 卡片宽度的20%
-                width: 'calc(var(--card-width, 20vh) * 0.8)',   // 分数框宽度 = 卡片宽度的80%
+                height: 'calc(var(--card-width, 20vh) * 0.2)',
+                width: 'calc(var(--card-width, 20vh) * 0.8)',
                 background: 'linear-gradient(135deg, rgb(205, 127, 50), rgb(210, 105, 30))',
                 color: 'rgb(255, 255, 255)',
                 padding: '0.5vh 1vh',
@@ -431,10 +464,10 @@ export default function Top3Container({ data }: Top3ContainerProps) {
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                   position: 'absolute',
-                  left: '10px', // 可以调左右位置
-                  top: 'calc(var(--card-width, 20vh) * 0.0)',   // 上边距 = 卡片宽度的0% (和金卡一样)
-                  width: 'calc(var(--card-width, 20vh) * 0.2)',  // 分数图标宽度 = 卡片宽度的20%
-                  height: 'calc(var(--card-width, 20vh) * 0.2)' // 分数图标高度 = 卡片宽度的20%
+                  left: '10px',
+                  top: 'calc(var(--card-width, 20vh) * 0.0)',
+                  width: 'calc(var(--card-width, 20vh) * 0.2)',
+                  height: 'calc(var(--card-width, 20vh) * 0.2)'
                 }}
               >
                 <path
@@ -453,13 +486,13 @@ export default function Top3Container({ data }: Top3ContainerProps) {
               <p 
                 className="bronze-grades-box-num"
                 style={{
-                  fontSize: 'calc(var(--card-width, 20vh) * 0.10)', // 分数数字 = 卡片宽度的10% (比金卡小一号)
+                  fontSize: 'calc(var(--card-width, 20vh) * 0.10)',
                   fontFamily: 'AlibabaPuHuiTi-3-55-Regular',
-                  marginLeft: 'calc(var(--card-width, 20vh) * 0.17)', // 左边距 = 卡片宽度的17%
-                  marginTop: 'calc(var(--card-width, 20vh) * 0.0)', // 上边距 = 卡片宽度的0% (和金卡一样)
+                  marginLeft: 'calc(var(--card-width, 20vh) * 0.17)',
+                  marginTop: 'calc(var(--card-width, 20vh) * 0.0)',
                   textAlign: 'center',
-                  width: 'calc(var(--card-width, 20vh) * 0.6)', // 宽度 = 卡片宽度的60%
-                  height: 'calc(var(--card-width, 20vh) * 0.2)', // 高度 = 卡片宽度的20% (和金卡一样)
+                  width: 'calc(var(--card-width, 20vh) * 0.6)',
+                  height: 'calc(var(--card-width, 20vh) * 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
